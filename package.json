@@ -10,7 +10,7 @@
     "typecheck": "next typegen && tsc --noEmit",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "node --test \"src/**/*.test.ts\"",
+    "test": "node --test \"src/**/*.test.ts\" \"scripts/**/*.test.mjs\"",
     "qa": "playwright test",
     "assets:placeholders": "node scripts/make-placeholders.mjs"
   },
@@ -24,6 +24,7 @@
     "react-dom": "19.3.0"
   },
   "devDependencies": {
+    "@huggingface/transformers": "^4.3.1",
     "@playwright/test": "^1.64.1",
     "@tailwindcss/turbopack": "^4",
     "@types/node": "^20",

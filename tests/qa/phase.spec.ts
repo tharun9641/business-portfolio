@@ -142,3 +142,30 @@ for (const vp of VIEWPORTS) {
     if (video) await rename(await video.path(), path.join(OUT, `scroll-${vp.name}.webm`))
   })
 }
+
+for (const vp of VIEWPORTS) {
+  test(`asset contact sheet, ${vp.name}px`, async ({ page }) => {
+    await page.setViewportSize({ width: vp.width, height: vp.height })
+    await page.goto('/dev/assets')
+    // Walk the page so every lazy image loads, then wait until all have decoded.
+    await page.evaluate(async () => {
+      for (let y = 0; y < document.body.scrollHeight; y += window.innerHeight / 2) {
+        window.scrollTo(0, y)
+        await new Promise((r) => setTimeout(r, 120))
+      }
+      window.scrollTo(0, 0)
+    })
+    await page.waitForFunction(() =>
+      [...document.images].every((img) => img.complete && img.naturalWidth > 0),
+    )
+    await page.screenshot({ path: path.join(OUT, `contact-sheet-${vp.name}.png`), fullPage: true })
+    // Raise the bascules in the live layer stack and capture just the preview.
+    await page.getByLabel(/Bascule angle/).fill('80')
+    const stack = page.locator('section', {
+      has: page.getByRole('heading', { name: 'Hero layer stack' }),
+    })
+    await stack.scrollIntoViewIfNeeded()
+    await page.waitForTimeout(400)
+    await stack.screenshot({ path: path.join(OUT, `hero-stack-open-${vp.name}.png`) })
+  })
+}

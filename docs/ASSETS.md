@@ -104,3 +104,51 @@ The wheel itself is procedural 3D, so **no plate may contain the London Eye**. T
 Both models cost **0.03 pollen per image** (free tier, no Paid Pollen). The plan is about 25 final images plus about 2× that in retries, so roughly **75 generations ≈ 2.3 pollen**.
 
 The current balance is **0.25 pollen** (about 8 images), so a top-up is needed before Phase 2. I'll confirm the real cost after the first generation (`polli usage --history`).
+
+## Phase 2 status (2026-10-18)
+
+How to rebuild: `node scripts/hero/build.mjs`, `node scripts/eye/build.mjs`, `npm run assets:placeholders`, then `node scripts/check-asset-budgets.mjs` (budgets + contact-sheet manifest). Review everything at **`/dev/assets`**.
+
+Committed generated inputs are in `assets-src/generated/`. ML caches and intermediates are in `assets-src/work/` and `.cache/` (both gitignored, and recomputed when missing).
+
+Served size = AVIF, 1x at 1920 px.
+
+### Hero (all cut from the PM photo)
+
+All hero layers share one 4240×2832 canvas, so they register exactly. Alpha layers are WebP (D-27).
+
+| File                                                            | Served (KB) | Status                                                         |
+| --------------------------------------------------------------- | ----------- | -------------------------------------------------------------- |
+| `hero/sky.avif`                                                 | 46          | ready                                                          |
+| `hero/skyline.webp` (includes the Kontext fill behind the deck) | 53          | ready                                                          |
+| `hero/towers.webp`                                              | 41          | ready                                                          |
+| `hero/bascule-left.webp`, `hero/bascule-right.webp`             | 4 each      | ready. Pivots are in `src/content/generated/heroGeometry.json` |
+| `hero/water.webp`                                               | 73          | ready. Reflections are added live in Phase 3 (D-06)            |
+| `hero/belfast.webp`                                             | 34          | ready                                                          |
+| `hero/piers.webp`                                               | 23          | ready                                                          |
+| `hero/embankment.webp` (lamp globes are lit)                    | 73          | ready                                                          |
+| `hero/still.avif` (graded composite)                            | 273         | ready. Reduced-motion still and LCP candidate                  |
+| Mist                                                            | —           | ready: reuses `shared/mist-1..3.webp`                          |
+| Lamp glows, warning lights, bus                                 | —           | Phase 3 (CSS/SVG)                                              |
+
+### London Eye
+
+`master.jpg` is from flux.1.1-pro at 1440×800, upscaled 2× with Swin2SR to 2880×1600.
+
+| File                    | Served (KB) | Status                                                                        |
+| ----------------------- | ----------- | ----------------------------------------------------------------------------- |
+| `eye/sky.avif`          | 21          | ready. Uses the scene's own sky (D-26)                                        |
+| `eye/far-bank.webp`     | 133         | ready. Clock faces warmed. The belfry band keeps a slight yellow-green        |
+| `eye/water.webp`        | 23          | ready                                                                         |
+| `eye/sub-01..04.avif`   | 62 – 231    | ready. sub-04 shows a finished hallway, not a renovation (see CONTENT_NEEDED) |
+| `eye/sub-05.avif`       | 6           | **placeholder.** Needs about 0.03 pollen to generate                          |
+| `eye/foreground.webp`   | 34          | **placeholder** (template railing). Needs about 0.03 pollen                   |
+| `eye/wheel-static.avif` | —           | Phase 4 (render capture)                                                      |
+
+### Shared
+
+| File                           | Status                                     |
+| ------------------------------ | ------------------------------------------ |
+| `shared/mist-1..3.webp`        | ready (procedural)                         |
+| `shared/template/*`            | placeholders for the `_Template` demo only |
+| `shared/og.jpg`, logo, favicon | Phase 5 / placeholder                      |

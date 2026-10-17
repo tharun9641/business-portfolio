@@ -28,3 +28,8 @@ Every value in the brief's section 0 was still a placeholder. The build uses the
 | 05  | Live    | Handover, styling and a year of aftercare. Then the best part: switching the lamps on.                        | Finished living room with lamps lit, view of the Thames at blue hour                    |
 
 Please confirm or replace: the number of subsections (4–8), the headings, the body copy and the image subjects.
+
+## Image notes (Phase 2)
+
+- `eye/sub-04` ("Build") came out as a finished hallway rather than a renovation in progress. Keep it, or regenerate once pollen is topped up.
+- `eye/sub-05` ("Live") and `eye/foreground` are placeholders until there is pollen (about 0.06 total).

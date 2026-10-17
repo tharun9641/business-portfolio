@@ -43,3 +43,7 @@ next-env.d.ts
 # QA artefacts
 /test-results/
 /playwright-report/
+
+# model cache for offline asset scripts
+/.cache/
+/assets-src/work/
