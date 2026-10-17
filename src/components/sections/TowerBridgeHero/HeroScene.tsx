@@ -2,7 +2,7 @@
 
 import { useRef, type ReactNode } from 'react'
 import { useDeviceTier } from '@/components/motion/useDeviceTier'
-import { gsap, useGSAP } from '@/lib/gsap'
+import { gsap, ScrollTrigger, useGSAP } from '@/lib/gsap'
 import { EASE, SCRUB } from '@/lib/motion'
 
 type HeroSceneProps = {
@@ -44,7 +44,11 @@ export function HeroScene({ id, labelledBy, children, pin, push, openAngle, bus 
           const stage = q('[data-hero-stage]')[0]
 
           // Arrival: the scene fades up out of --ink.
-          gsap.fromTo(stage, { autoAlpha: 0, scale: 1.04 }, { autoAlpha: 1, scale: 1, duration: 2.2, ease: EASE.entrance })
+          gsap.fromTo(
+            stage,
+            { autoAlpha: 0, scale: 1.04 },
+            { autoAlpha: 1, scale: 1, duration: 2.2, ease: EASE.entrance },
+          )
 
           // One quiet bus crossing before the bridge opens (skipped on low-tier devices).
           const busEl = q('[data-hero-bus]')[0]
@@ -71,8 +75,10 @@ export function HeroScene({ id, labelledBy, children, pin, push, openAngle, bus 
             scrollTrigger: {
               trigger: section,
               start: 'top top',
-              end: () => `+=${(portrait ? pin.mobile : pin.desktop) / 100 * window.innerHeight}`,
+              end: () => `+=${((portrait ? pin.mobile : pin.desktop) / 100) * window.innerHeight}`,
               pin: true,
+              // The pin adds scroll height, so it must be measured before every later section.
+              refreshPriority: 1,
               scrub: SCRUB,
               invalidateOnRefresh: true,
               onUpdate: (self) => {
@@ -82,19 +88,31 @@ export function HeroScene({ id, labelledBy, children, pin, push, openAngle, bus 
                   gsap.to(busEl, { autoAlpha: 0, duration: 0.4 })
                 }
               },
-              onToggle: (self) => gsap.set(q('[data-hero-layer], [data-hero-stage]'), { willChange: self.isActive ? 'transform' : 'auto' }),
+              onToggle: (self) =>
+                gsap.set(q('[data-hero-layer], [data-hero-stage]'), {
+                  willChange: self.isActive ? 'transform' : 'auto',
+                }),
             },
           })
 
           tl.to(q('[data-hero-copy]'), { yPercent: -60, autoAlpha: 0, duration: 0.12 }, 0)
             .to(q('[data-hero-cue]'), { autoAlpha: 0, duration: 0.05 }, 0)
-            .to(q('[data-bascule="left"]'), { rotation: -openAngle, duration: 0.5, ease: 'power1.inOut' }, 0.05)
-            .to(q('[data-bascule="right"]'), { rotation: openAngle, duration: 0.5, ease: 'power1.inOut' }, 0.05)
+            .to(
+              q('[data-bascule="left"]'),
+              { rotation: -openAngle, duration: 0.5, ease: 'power1.inOut' },
+              0.05,
+            )
+            .to(
+              q('[data-bascule="right"]'),
+              { rotation: openAngle, duration: 0.5, ease: 'power1.inOut' },
+              0.05,
+            )
 
           for (const layer of q('[data-hero-layer]')) {
             const ex = Number(layer.dataset.exitX)
             const ey = Number(layer.dataset.exitY)
-            if (ex || ey) tl.to(layer, { xPercent: ex, yPercent: ey, duration: 0.6, ease: 'power1.in' }, 0.3)
+            if (ex || ey)
+              tl.to(layer, { xPercent: ex, yPercent: ey, duration: 0.6, ease: 'power1.in' }, 0.3)
           }
 
           tl.to(stage, { scale: push.scale, duration: 0.65, ease: 'power2.in' }, 0.35).to(
@@ -102,6 +120,9 @@ export function HeroScene({ id, labelledBy, children, pin, push, openAngle, bus 
             { autoAlpha: 1, duration: 0.15 },
             0.85,
           )
+
+          // Later sections measured themselves before this pin existed; re-measure everything.
+          ScrollTrigger.refresh()
         },
       )
     },

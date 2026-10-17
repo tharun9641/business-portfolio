@@ -12,7 +12,7 @@ import { existsSync } from 'node:fs'
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 import sharp from 'sharp'
-import { BASCULES, BRIDGE_CROP, CANVAS, DEPTH, LAMPS, REGIONS } from './geometry.mjs'
+import { BASCULES, BRIDGE_CROP, CANVAS, DEPTH, LAMPS, PIERS_CROP, REGIONS } from './geometry.mjs'
 import {
   addLight,
   blend,
@@ -39,6 +39,8 @@ import {
 } from './lib.mjs'
 
 const SRC = 'incoming-assets/hero/tower-bridge.jpg'
+/** Rows below this are where pier posts stand in open water. */
+const PIERS_SPLIT_Y = 1770
 const WORK = 'assets-src/work/hero'
 const GENERATED = 'assets-src/generated/hero'
 const OUT = 'public/assets/hero'
@@ -66,15 +68,15 @@ async function ensureDepth() {
   return readGray(file, CANVAS)
 }
 
-async function ensureBridgeMask() {
-  const file = path.join(WORK, 'mask-bridge.png')
+/** BiRefNet salient-object mask for one crop, placed on the full canvas (cached). */
+async function ensureBirefMask(name, c) {
+  const file = path.join(WORK, `mask-${name}.png`)
   if (!existsSync(file)) {
     const { AutoModel, AutoProcessor, RawImage, env } = await import('@huggingface/transformers')
     env.cacheDir = path.resolve('.cache/models')
     const id = 'onnx-community/BiRefNet_lite-ONNX'
     const model = await AutoModel.from_pretrained(id, { dtype: 'fp32' })
     const processor = await AutoProcessor.from_pretrained(id)
-    const c = BRIDGE_CROP
     const image = await (
       await RawImage.read(SRC)
     ).crop([c.left, c.top, c.left + c.width - 1, c.top + c.height - 1])
@@ -102,7 +104,8 @@ const { rgb: src } = await readRGB(SRC)
 const guide = luminance(src, W, H)
 const depth = await ensureDepth()
 log('depth ready')
-const bridgeRaw = await ensureBridgeMask()
+const bridgeRaw = await ensureBirefMask('bridge-raw', BRIDGE_CROP)
+const piersRaw = await ensureBirefMask('piers-raw', PIERS_CROP)
 log('bridge mask ready')
 
 const threshold = (m, t) => m.map((v) => (v * 255 >= t ? 1 : 0))
@@ -128,13 +131,14 @@ const embankment = multiply(embankPoly, notSky)
 // separates the hull and moorings from the far bank.
 const belfastDepth = union(above(1560), refine(threshold(depth, DEPTH.belfastLow), 8))
 const belfast = subtract(multiply(belfastPoly, notSky, belfastDepth), bridge)
-const piers = subtract(
-  subtract(
-    multiply(piersPoly, notSky, refine(threshold(depth, DEPTH.piers), 6)),
-    union(bridge, deck),
-  ),
-  union(belfast, embankment),
+// Above the gangways, depth separates structure from the far bank. Below them, depth cannot tell
+// posts from open water, so BiRefNet decides (it isolates posts and pier buildings, not water).
+const piersDepth = multiply(piersPoly, notSky, refine(threshold(depth, DEPTH.piers), 6))
+const piersLow = levels(piersRaw, 0.35, 0.65)
+const piersMask = piersDepth.map((v, i) =>
+  Math.floor(i / W) < PIERS_SPLIT_Y ? v : v * piersLow[i],
 )
+const piers = subtract(subtract(piersMask, union(bridge, deck)), union(belfast, embankment))
 const nearer = union(bridge, deck, belfast, piers, embankment)
 const skyline = multiply(subtract(notSky, nearer), above(REGIONS.horizonY + 40))
 log('layer masks')
@@ -191,7 +195,27 @@ for (let i = 0; i < N; i++) {
     for (let c = 0; c < 3; c++)
       skylineRGB[i * 3 + c] = src[i * 3 + c] * (1 - k) + behindDeck[i * 3 + c] * k
 }
-const skylineAlpha = union(skyline, deckFill)
+// Behind the nearer layers, continue the far bank down to the river so that, when Belfast, the
+// piers and the embankment drift apart, they uncover dark far-bank fill rather than empty sky.
+const FAR_TOP = 1480
+const farBand = Float32Array.from({ length: N }, (_, i) => {
+  const y = Math.floor(i / W)
+  return y < FAR_TOP || y > REGIONS.horizonY + 40 ? 0 : Math.min(1, (y - FAR_TOP) / 40)
+})
+const behindNearer = subtract(multiply(farBand, nearer), bridge)
+const farFill = pushPullFill(
+  skylineRGB,
+  union(skyline, deck).map((v) => (v > 0.9 ? 1 : 0)),
+  W,
+  H,
+)
+for (let i = 0; i < N; i++) {
+  const k = behindNearer[i] * (1 - skyline[i])
+  if (k > 0)
+    for (let c = 0; c < 3; c++)
+      skylineRGB[i * 3 + c] = skylineRGB[i * 3 + c] * (1 - k) + farFill[i * 3 + c] * k
+}
+const skylineAlpha = union(skyline, deckFill, behindNearer)
 // The river layer sits above the skyline to hide its lower edge, so it must not cover what the
 // skyline and bridge own (the far bank under the bridge, and the gap behind the bascules).
 const waterLayerAlpha = subtract(waterAlpha, union(skylineAlpha, bridge))
@@ -209,6 +233,18 @@ const skyGraded = gradeRamp(skyPlate, ones, N, RAMPS.sky, {
 verticalExposure(skyGraded, W, H, 0.62, 1.05, 0, REGIONS.horizonY)
 addLight(skyGraded, W, H, -200, REGIONS.horizonY + 150, 1100, '#e8b65a', 0.28)
 addLight(skyGraded, W, H, 2150, REGIONS.horizonY, 1100, '#c98a4a', 0.12)
+// Below the skyline the sky plate is never meant to be seen; fade it to night so any reveal reads
+// as dark far bank instead of pale extrapolated sky.
+{
+  const ink = [11 / 255, 18 / 255, 32 / 255]
+  for (let y = 1420; y < H; y++) {
+    const k = Math.min(1, (y - 1420) / 160)
+    for (let x = 0; x < W; x++) {
+      const i = (y * W + x) * 3
+      for (let c = 0; c < 3; c++) skyGraded[i + c] = skyGraded[i + c] * (1 - k) + ink[c] * k
+    }
+  }
+}
 log('graded sky')
 
 const skylineGraded = gradeRamp(skylineRGB, skylineAlpha, N, RAMPS.skyline, {

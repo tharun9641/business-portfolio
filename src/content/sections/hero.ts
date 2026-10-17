@@ -33,7 +33,14 @@ export type HeroContent = {
   /** Red warning lights, canvas px. */
   warningLights: [number, number][]
   /** The double-decker that crosses once before the opening. */
-  bus: { from: number; to: number; deckY: number; height: number; durationS: number; delayS: number }
+  bus: {
+    from: number
+    to: number
+    deckY: number
+    height: number
+    durationS: number
+    delayS: number
+  }
   mist: { src: string; top: string; height: string; opacity: number; duration: number }[]
 }
 
@@ -43,9 +50,15 @@ export const heroContent: HeroContent = {
   scrollCue: 'Scroll to open',
   stillAlt: 'Tower Bridge at blue hour, floodlit in gold above the Thames, seen past HMS Belfast.',
   layers: [
-    { id: 'sky', src: '/assets/hero/sky.avif', depth: 0.05, exit: { x: 0, y: 4 } },
-    { id: 'skyline', src: '/assets/hero/skyline.webp', depth: 0.15, exit: { x: 0, y: 3 } },
-    { id: 'towers', src: '/assets/hero/towers.webp', depth: 0.35, exit: { x: 0, y: 0 }, reflect: true },
+    { id: 'sky', src: '/assets/hero/sky.avif', depth: 0.05, exit: { x: 0, y: 0 } },
+    { id: 'skyline', src: '/assets/hero/skyline.webp', depth: 0.15, exit: { x: 0, y: 0 } },
+    {
+      id: 'towers',
+      src: '/assets/hero/towers.webp',
+      depth: 0.35,
+      exit: { x: 0, y: 0 },
+      reflect: true,
+    },
     {
       id: 'bascule-left',
       src: '/assets/hero/bascule-left.webp',
@@ -62,7 +75,7 @@ export const heroContent: HeroContent = {
       bascule: 'right',
       reflect: true,
     },
-    { id: 'water', src: '/assets/hero/water.webp', depth: 0.5, exit: { x: 0, y: 6 } },
+    { id: 'water', src: '/assets/hero/water.webp', depth: 0.5, exit: { x: 0, y: 0 } },
     { id: 'belfast', src: '/assets/hero/belfast.webp', depth: 0.45, exit: { x: -14, y: 4 } },
     { id: 'piers', src: '/assets/hero/piers.webp', depth: 0.55, exit: { x: 0, y: 12 } },
     { id: 'embankment', src: '/assets/hero/embankment.webp', depth: 0.85, exit: { x: 22, y: 6 } },

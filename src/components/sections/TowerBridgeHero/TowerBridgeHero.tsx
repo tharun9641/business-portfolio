@@ -14,7 +14,10 @@ import { HeroScene } from './HeroScene'
  */
 export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
   const { canvas, bascules, lamps } = content.geometry
-  const pct = (x: number, y: number) => ({ left: `${(x / canvas.w) * 100}%`, top: `${(y / canvas.h) * 100}%` })
+  const pct = (x: number, y: number) => ({
+    left: `${(x / canvas.w) * 100}%`,
+    top: `${(y / canvas.h) * 100}%`,
+  })
   const origin = (layer: HeroLayer) => {
     if (!layer.bascule) return undefined
     const [px, py] = bascules[layer.bascule].pivot
@@ -44,9 +47,16 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
       id={id}
       labelledBy={headingId}
       pin={content.pin}
-      push={{ scale: content.push.scale, focus: [content.push.focus[0] / canvas.w, content.push.focus[1] / canvas.h] }}
+      push={{
+        scale: content.push.scale,
+        focus: [content.push.focus[0] / canvas.w, content.push.focus[1] / canvas.h],
+      }}
       openAngle={content.openAngle}
-      bus={{ distance: (bus.to - bus.from) / canvas.w, durationS: bus.durationS, delayS: bus.delayS }}
+      bus={{
+        distance: (bus.to - bus.from) / canvas.w,
+        durationS: bus.durationS,
+        delayS: bus.delayS,
+      }}
     >
       <div data-hero-frame className="hero-frame">
         <div data-hero-stage className="hero-stage">
@@ -62,16 +72,35 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
               style={{ transformOrigin: origin(layer), zIndex: i }}
             >
               {layerImage(layer)}
-              {layer.id === 'embankment'
-                ? lamps.map(([x, y]) => (
+              {layer.id === 'embankment' ? (
+                <>
+                  {lamps.map(([x, y]) => (
                     <span key={`${x}-${y}`} aria-hidden className="hero-lamp" style={pct(x, y)} />
-                  ))
-                : null}
+                  ))}
+                  {/* Their reflections fall on the water just off the wall, and leave with it. */}
+                  {lamps.slice(1).map(([x], i) => (
+                    <span
+                      key={`streak-${x}`}
+                      aria-hidden
+                      className="hero-streak"
+                      style={{
+                        ...pct(x - 150, content.horizonY + 20),
+                        animationDelay: `${i * 0.43}s`,
+                      }}
+                    />
+                  ))}
+                </>
+              ) : null}
             </div>
           ))}
 
           {/* Live river reflection of the bridge: a mirrored copy, so it opens with the bascules. */}
-          <div data-hero-reflection aria-hidden className="hero-reflection" style={{ ...reflectStyle, zIndex: 5 }}>
+          <div
+            data-hero-reflection
+            aria-hidden
+            className="hero-reflection"
+            style={{ ...reflectStyle, zIndex: 5 }}
+          >
             <div className="hero-reflection-flip">
               {content.layers
                 .filter((l) => l.reflect)
@@ -88,9 +117,9 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
             </div>
           </div>
 
-          {/* Lamp and floodlight reflections shimmering on the water. */}
+          {/* Floodlit towers shimmering on the water. */}
           <div aria-hidden className="absolute inset-0" style={{ zIndex: 5 }}>
-            {[...lamps.map(([x]) => x), 1575, 2690].map((x, i) => (
+            {[1575, 2690].map((x, i) => (
               <span
                 key={x}
                 className="hero-streak"
@@ -103,7 +132,12 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
           </div>
 
           {content.warningLights.map(([x, y]) => (
-            <span key={`${x}-${y}`} aria-hidden className="hero-warning" style={{ ...pct(x, y), zIndex: 4 }} />
+            <span
+              key={`${x}-${y}`}
+              aria-hidden
+              className="hero-warning"
+              style={{ ...pct(x, y), zIndex: 4 }}
+            />
           ))}
 
           <div data-hero-bus aria-hidden className="hero-bus" style={{ ...busStyle, zIndex: 4 }}>
@@ -125,12 +159,22 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
 
       {/* Reduced motion: the composed still instead of the live stage. */}
       <div data-hero-still className="hero-still">
-        <Image src="/assets/hero/still.avif" alt={content.stillAlt} fill preload sizes="100vw" className="object-cover" />
+        <Image
+          src="/assets/hero/still.avif"
+          alt={content.stillAlt}
+          fill
+          preload
+          sizes="100vw"
+          className="object-cover"
+        />
       </div>
 
       <div className="pointer-events-none absolute inset-0 bg-linear-to-b from-ink/70 via-transparent to-transparent" />
 
-      <div data-hero-copy className="absolute inset-x-0 top-[16svh] z-(--z-content) px-(--page-margin) text-center">
+      <div
+        data-hero-copy
+        className="absolute inset-x-0 top-[11svh] z-(--z-content) px-(--page-margin) text-center"
+      >
         <SplitHeading
           as="h1"
           id={headingId}
@@ -141,7 +185,9 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
           {content.heading}
         </SplitHeading>
         <Reveal trigger="load" delay={1}>
-          <p className="mx-auto mt-6 max-w-[46ch] text-step-1 leading-snug text-stone-80">{content.valueProp}</p>
+          <p className="mx-auto mt-4 max-w-[46ch] text-step-0 leading-snug text-stone-80 md:text-step-1">
+            {content.valueProp}
+          </p>
         </Reveal>
       </div>
 
@@ -150,7 +196,11 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
         <span className="hero-cue-line" />
       </div>
 
-      <div data-hero-fade aria-hidden className="pointer-events-none absolute inset-0 z-(--z-content) bg-ink opacity-0" />
+      <div
+        data-hero-fade
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-(--z-content) bg-ink opacity-0"
+      />
     </HeroScene>
   )
 }

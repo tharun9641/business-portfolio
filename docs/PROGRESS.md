@@ -10,26 +10,30 @@ Read this first when resuming. Update it at the end of every working session.
 
 ## Status
 
-| Phase               | State                                   | Branch               |
-| ------------------- | --------------------------------------- | -------------------- |
-| 0 Recon             | approved                                | — (docs only)        |
-| 1 Foundation        | approved, committed                     | `phase-1-foundation` |
-| 2 Assets            | approved, committed                     | `phase-2-assets`     |
-| 3 Tower Bridge hero | **in progress** (PM approved start)     | `phase-3-hero`       |
+| Phase               | State                                 | Branch               |
+| ------------------- | ------------------------------------- | -------------------- |
+| 0 Recon             | approved                              | — (docs only)        |
+| 1 Foundation        | approved, committed                   | `phase-1-foundation` |
+| 2 Assets            | approved, committed                   | `phase-2-assets`     |
+| 3 Tower Bridge hero | **complete, waiting for PM approval** | `phase-3-hero`       |
 
 ## Current phase: 3 Tower Bridge hero
 
-### Done (uncommitted, unverified)
-- `src/content/sections/hero.ts` (layers, exits, pin lengths, push, warning lights, bus, mist).
-- `TowerBridgeHero.tsx` (server markup: layered stage, live reflection, lamp glows, shimmer streaks, warning lights, bus SVG, mist, reduced-motion still, h1 + value prop, scroll cue, fade overlay) and `HeroScene.tsx` (GSAP: fade up, bus crossing, pinned scrubbed opening; 200vh desktop / 140vh portrait).
-- Hero CSS appended to `globals.css`; registered first in `registry.tsx` (id `top`); temporary sr-only h1 removed from `page.tsx`.
+### Done
+
+- Hero content, markup and pinned GSAP sequence (see docs/MOTION.md → Tower Bridge hero).
+- Tuned in the browser at 1440 and 375. Asset fixes: the far bank continues behind nearer layers, the low sky fades to night, and the pier posts are BiRefNet-masked.
+- Reduced motion (still image, no pin, one h1) and `?tier=low` (no reflection or bus) verified.
+- QA: 11/11 Playwright tests, including the hero sequence at both widths (bascules reach 80°). Evidence is in `docs/qa/phase-3/`.
 
 ### Remaining
-1. Run `npm run typecheck` and `npm run lint` and fix errors.
-2. Open http://localhost:3000 (`npx next dev -p 3000`), and check the arrival fade, bus, opening, layer separation, camera push and fade-out at 1440 and 375. Tune the timings and exits in `hero.ts`.
-3. Check reduced motion (still image, no pin) and the `?tier=low` view.
-4. Add Playwright captures of hero scroll positions plus a recording. Update the QA spec "layers separate" test if section ids changed (the hero now comes first).
-5. Update DECISIONS/MOTION docs, run all checks, `PHASE=phase-3 npx playwright test`, commit on `phase-3-hero`, then **stop for PM approval**.
+
+None. Waiting for PM approval.
+
+### Known polish items (for Phase 5)
+
+- Late in the camera push, the river uncovered under the embankment shows a slightly flat, darker block.
+- On desktop, the value proposition's second line grazes the tower spires (it stays readable).
 
 ## Notes
 

@@ -85,6 +85,8 @@ test('reduced motion: no smooth scroll, no parallax, content visible', async ({ 
   await settle(page)
 
   await expect(page.locator('html')).not.toHaveClass(/lenis/)
+  await expect(page.locator('h1')).toBeVisible()
+  await expect(page.locator('.pin-spacer')).toHaveCount(0)
   await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight * 0.4))
   await settle(page)
 
@@ -167,5 +169,32 @@ for (const vp of VIEWPORTS) {
     await stack.scrollIntoViewIfNeeded()
     await page.waitForTimeout(400)
     await stack.screenshot({ path: path.join(OUT, `hero-stack-open-${vp.name}.png`) })
+  })
+}
+
+for (const vp of VIEWPORTS) {
+  test(`hero opening sequence, ${vp.name}px`, async ({ page }) => {
+    await page.setViewportSize({ width: vp.width, height: vp.height })
+    await page.goto('/')
+    await expect(page.locator('h1')).toHaveCount(1)
+    await settle(page, 3500) // arrival fade and heading reveal
+    const pin = await page.evaluate(() => (innerHeight > innerWidth ? 1.4 : 2) * innerHeight)
+    const angle = () =>
+      page.$eval('[data-hero-layer="bascule-left"]', (el) => {
+        const m = new DOMMatrix(getComputedStyle(el).transform)
+        return Math.round((Math.atan2(m.b, m.a) * 180) / Math.PI)
+      })
+    expect(await angle()).toBe(0)
+    for (const f of [0, 0.15, 0.3, 0.5, 0.7, 0.9]) {
+      await page.evaluate((y) => window.scrollTo(0, y), Math.round(pin * f))
+      await settle(page)
+      await page.screenshot({
+        path: path.join(OUT, `hero-${vp.name}-${String(f * 100).padStart(3, '0')}.png`),
+      })
+    }
+    // By 70% of the pin both leaves are fully raised.
+    await page.evaluate((y) => window.scrollTo(0, y), Math.round(pin * 0.7))
+    await settle(page)
+    expect(await angle()).toBe(-80)
   })
 }

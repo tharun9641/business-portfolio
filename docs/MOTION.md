@@ -50,3 +50,21 @@ No Lenis, no pinning, no parallax, no loops. Scenes render their composed frame 
 - **mid:** everything else
 
 Override it with `?tier=low|mid|high`. The detected tier is exposed as `html[data-tier]` and `useDeviceTier()`.
+
+## Tower Bridge hero (`TowerBridgeHero` + `HeroScene`)
+
+All values come from `src/content/sections/hero.ts`.
+
+| Scroll progress | What happens                                                                                                          |
+| --------------- | --------------------------------------------------------------------------------------------------------------------- |
+| on load         | Stage fades up from `--ink` (2.2 s); h1 lines rise (SplitText); value prop reveals; the bus crosses once              |
+| 0 → 0.12        | Copy lifts (−60%) and fades; the scroll cue fades                                                                     |
+| 0.01 → 0.7      | Warning lights blink                                                                                                  |
+| 0.05 → 0.55     | Bascules rotate to ∓80° about their measured pivots (`power1.inOut`). The mirrored river reflection rotates with them |
+| 0.30 → 0.90     | Layers drift apart along their `exit` vectors (Belfast left, embankment right, piers down)                            |
+| 0.35 → 1.00     | Camera push: the stage scales to 2.4× about the gap between the towers (`power2.in`)                                  |
+| 0.85 → 1.00     | Fade to `--ink`, handing over to the next section                                                                     |
+
+- **Pin length:** 200vh on desktop, 140vh in portrait. Portrait uses its own stage framing (250vw wide), so both towers stay in view.
+- **Low tier:** no reflection and no bus.
+- **Reduced motion:** no pin. `hero/still.avif` is shown with the copy.

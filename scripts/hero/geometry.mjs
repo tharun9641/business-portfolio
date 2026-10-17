@@ -65,6 +65,9 @@ export const REGIONS = {
 /** Bridge region fed to BiRefNet (salient object = the bridge). */
 export const BRIDGE_CROP = { left: 1000, top: 700, width: 2200, height: 1100 }
 
+/** Pier region fed to BiRefNet, to tell posts from the water around them. */
+export const PIERS_CROP = { left: 1240, top: 1500, width: 1930, height: 620 }
+
 /** Depth (0..255 from Depth Anything V2) thresholds. Sky is exactly 0; the far skyline is 1–2. */
 export const DEPTH = { sky: 1, belfastLow: 40, piers: 28 }
 

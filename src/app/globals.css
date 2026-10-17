@@ -146,7 +146,7 @@
 @media (orientation: portrait) {
   .hero-frame {
     --stage-w: 250vw;
-    top: calc(45svh - var(--stage-w) / 1.4972 * 0.45);
+    top: calc(56svh - var(--stage-w) / 1.4972 * 0.45);
   }
 }
 .hero-stage {
@@ -176,7 +176,12 @@
 .hero-lamp {
   width: 5%;
   aspect-ratio: 1;
-  background: radial-gradient(circle, rgb(255 236 190 / 0.55), rgb(232 182 90 / 0.18) 35%, transparent 70%);
+  background: radial-gradient(
+    circle,
+    rgb(255 236 190 / 0.55),
+    rgb(232 182 90 / 0.18) 35%,
+    transparent 70%
+  );
   mix-blend-mode: screen;
   animation: hero-flicker 5s ease-in-out infinite;
 }
@@ -233,29 +238,63 @@
   transform-origin: top;
 }
 @keyframes hero-flicker {
-  0%, 100% { opacity: 1; }
-  47% { opacity: 0.86; }
-  50% { opacity: 0.95; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  47% {
+    opacity: 0.86;
+  }
+  50% {
+    opacity: 0.95;
+  }
 }
 @keyframes hero-blink {
-  to { opacity: 1; }
+  to {
+    opacity: 1;
+  }
 }
 @keyframes hero-shimmer {
-  0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
-  50% { transform: scaleX(1.6) scaleY(0.92); opacity: 0.6; }
+  0%,
+  100% {
+    transform: scaleX(1) scaleY(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scaleX(1.6) scaleY(0.92);
+    opacity: 0.6;
+  }
 }
 @keyframes hero-cue {
-  0% { transform: scaleY(0); }
-  60% { transform: scaleY(1); opacity: 1; }
-  100% { transform: scaleY(1); opacity: 0; }
+  0% {
+    transform: scaleY(0);
+  }
+  60% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleY(1);
+    opacity: 0;
+  }
 }
 html[data-tier='low'] .hero-reflection,
 html[data-tier='low'] .hero-bus {
   display: none;
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-hero] .hero-frame { display: none; }
-  [data-hero] .hero-still { display: block; }
-  .hero-cue { display: none; }
-  .hero-lamp, .hero-streak, .hero-cue-line { animation: none; }
+  [data-hero] .hero-frame {
+    display: none;
+  }
+  [data-hero] .hero-still {
+    display: block;
+  }
+  .hero-cue {
+    display: none;
+  }
+  .hero-lamp,
+  .hero-streak,
+  .hero-cue-line {
+    animation: none;
+  }
 }
