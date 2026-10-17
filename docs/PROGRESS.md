@@ -17,23 +17,21 @@ Read this first when resuming. Update it at the end of every working session.
 | 2 Assets            | approved, committed                   | `phase-2-assets`     |
 | 3 Tower Bridge hero | **complete, waiting for PM approval** | `phase-3-hero`       |
 
-## Current phase: 3 Tower Bridge hero
+## Current phase: 4 London Eye
 
 ### Done
 
-- Hero content, markup and pinned GSAP sequence (see docs/MOTION.md → Tower Bridge hero).
-- Tuned in the browser at 1440 and 375. Asset fixes: the far bank continues behind nearer layers, the low sky fades to night, and the pier posts are BiRefNet-masked.
-- Reduced motion (still image, no pin, one h1) and `?tier=low` (no reflection or bus) verified.
-- QA: 11/11 Playwright tests, including the hero sequence at both widths (bascules reach 80°). Evidence is in `docs/qa/phase-3/`.
+- Content (`londonEye.ts`), tested wheel maths, SVG wheel, procedural R3F wheel (rim tubes and struts, 64 cables, hub, A-frame, 32 level glass capsules, lamp-lit active capsule with halo).
+- Pinned section: snapping stops, connector, panel transitions, roving-tabindex tablist, clickable capsules, mobile arc and swipe, low tier (SVG), reduced motion (list).
+- QA: 16/16 Playwright tests (stops at 375/1440, keyboard and click, low tier, reduced motion). Evidence is in `docs/qa/phase-4/`.
 
 ### Remaining
 
 None. Waiting for PM approval.
 
-### Known polish items (for Phase 5)
+### Carried polish items (Phase 5)
 
-- Late in the camera push, the river uncovered under the embankment shows a slightly flat, darker block.
-- On desktop, the value proposition's second line grazes the tower spires (it stays readable).
+- Hero: flat dark block revealed under the embankment late in the camera push; the value proposition grazes the spires on desktop.
 
 ## Notes
 

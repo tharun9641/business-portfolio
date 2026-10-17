@@ -115,7 +115,8 @@ test('menu: opens, traps focus, closes on Escape', async ({ page }) => {
   await toggle.click()
   const dialog = page.getByRole('dialog')
   await expect(dialog).toBeVisible()
-  await expect(dialog.getByRole('link', { name: 'Studio' })).toBeFocused()
+  // Focus lands on the first menu entry, whichever section is registered first.
+  await expect(dialog.getByRole('link').first()).toBeFocused()
   await page.waitForTimeout(700)
   await page.screenshot({ path: path.join(OUT, 'menu-375.png') })
   await page.keyboard.press('Escape')
@@ -160,7 +161,13 @@ for (const vp of VIEWPORTS) {
     await page.waitForFunction(() =>
       [...document.images].every((img) => img.complete && img.naturalWidth > 0),
     )
-    await page.screenshot({ path: path.join(OUT, `contact-sheet-${vp.name}.png`), fullPage: true })
+    // Software-GPU captures fail on very tall pages, so very tall pages are clipped.
+    const docHeight = await page.evaluate(() => document.documentElement.scrollHeight)
+    await page.screenshot({
+      path: path.join(OUT, `contact-sheet-${vp.name}.png`),
+      fullPage: true,
+      clip: { x: 0, y: 0, width: vp.width, height: Math.min(docHeight, 8000) },
+    })
     // Raise the bascules in the live layer stack and capture just the preview.
     await page.getByLabel(/Bascule angle/).fill('80')
     const stack = page.locator('section', {
@@ -198,3 +205,80 @@ for (const vp of VIEWPORTS) {
     expect(await angle()).toBe(-80)
   })
 }
+
+async function eyeStop(page: Page, i: number) {
+  const { top, h } = await page.evaluate(() => {
+    const spacer = document.getElementById('process')!.parentElement!
+    return { top: spacer.getBoundingClientRect().top + scrollY, h: spacer.offsetHeight }
+  })
+  const n = await page.locator('#process [role=tab]').count()
+  const y = top + (i / (n - 1)) * (h - page.viewportSize()!.height)
+  await page.evaluate((y) => window.scrollTo(0, y), Math.round(y))
+  await settle(page, 2600)
+}
+
+const selectedTab = (page: Page) =>
+  page.$$eval('#process [role=tab]', (tabs) =>
+    tabs.findIndex((t) => t.getAttribute('aria-selected') === 'true'),
+  )
+
+for (const vp of VIEWPORTS) {
+  test(`London Eye stops, ${vp.name}px`, async ({ page }) => {
+    await page.setViewportSize({ width: vp.width, height: vp.height })
+    await page.goto('/?tier=high')
+    await settle(page, 3000)
+    const n = await page.locator('#process [role=tab]').count()
+    expect(n).toBeGreaterThanOrEqual(4)
+    for (let i = 0; i < n; i++) {
+      await eyeStop(page, i)
+      expect(await selectedTab(page)).toBe(i)
+      await expect(
+        page.locator('#process [data-eye-panel][data-active] [data-eye-number]'),
+      ).toHaveText(new RegExp(`^0${i + 1} / 0${n}$`))
+      await page.screenshot({ path: path.join(OUT, `eye-${vp.name}-${i}.png`) })
+    }
+  })
+}
+
+test('London Eye: tabs work from the keyboard and by click', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?tier=high')
+  await settle(page, 3000)
+  await eyeStop(page, 0)
+  await page.locator('#process [role=tab]').first().focus()
+  await page.keyboard.press('ArrowDown')
+  await settle(page, 2600)
+  expect(await selectedTab(page)).toBe(1)
+  await expect(page.locator('#process [role=tab]').nth(1)).toBeFocused()
+  await page.locator('#process [role=tab]').nth(3).click()
+  await settle(page, 2600)
+  expect(await selectedTab(page)).toBe(3)
+  // Every subsection stays in the accessibility tree, in order.
+  await expect(page.locator('#process [role=tabpanel] h3')).toHaveCount(5)
+})
+
+test('London Eye: low tier uses the SVG wheel, no WebGL canvas', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?tier=low')
+  await settle(page, 3000)
+  await eyeStop(page, 1)
+  await expect(page.locator('#process canvas')).toHaveCount(0)
+  await expect(page.locator('#process .eye-wheel svg')).toHaveCount(1)
+})
+
+test('London Eye: reduced motion shows every stop as a list', async ({ browser }) => {
+  const context = await browser.newContext({
+    reducedMotion: 'reduce',
+    viewport: { width: 1440, height: 900 },
+  })
+  const page = await context.newPage()
+  await page.goto('/')
+  await settle(page)
+  const opacities = await page.$$eval('[data-eye-panel]', (ps) =>
+    ps.map((p) => getComputedStyle(p).opacity),
+  )
+  expect(opacities.every((o) => o === '1')).toBe(true)
+  await expect(page.locator('#process canvas')).toHaveCount(0)
+  await page.locator('#process').screenshot({ path: path.join(OUT, 'eye-reduced-motion-1440.png') })
+  await context.close()
+})

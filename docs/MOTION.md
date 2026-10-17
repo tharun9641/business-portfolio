@@ -68,3 +68,19 @@ All values come from `src/content/sections/hero.ts`.
 - **Pin length:** 200vh on desktop, 140vh in portrait. Portrait uses its own stage framing (250vw wide), so both towers stay in view.
 - **Low tier:** no reflection and no bus.
 - **Reduced motion:** no pin. `hero/still.avif` is shown with the copy.
+
+## London Eye (`LondonEyeSection`, `Wheel3D`, `Wheel2D`)
+
+- **Pin:** N × 100vh, scrubbed, with gentle snapping to each stop (`snapTo: 1/(N−1)`, `inertia: false`).
+- **Turning:** scroll progress → `rotationForProgress()` → `setRotation()` on whichever wheel is mounted. Capsules counter-rotate to stay level.
+- **On arrival:**
+  - the capsule lights to `--lamp` and scales to 1.08, with a halo at the boarding point;
+  - the gold connector draws (stroke-dashoffset, 0.6 s);
+  - the old panel exits up, then the new panel enters: number, then SplitText heading lines, then body, then image clip-reveal with a 1.15 → 1 settle.
+- **Background:** sky, far bank, water and mist drift by depth over the pin.
+- **Ambient:** capsule lamps twinkle (shader colour, per capsule phase) and the halo pulses.
+- **Mobile (≤767px):** the wheel arc sits at the top with boarding at 6 o'clock. Dots run in a row at the bottom, and a horizontal swipe on the content moves to the next or previous stop.
+- **Tiers:**
+  - `high`/`mid`: the R3F wheel is lazy-loaded (`next/dynamic`, `ssr:false`), with the SVG wheel shown until its first frame. The canvas only renders while the section is near the viewport.
+  - `low`: SVG only.
+- **Reduced motion:** no pin, a static SVG wheel, and every stop as a list.

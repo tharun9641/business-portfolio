@@ -1,11 +1,13 @@
 import type { ComponentType, ReactNode } from 'react'
 import { demoContent } from '@/content/sections/demo'
 import { heroContent } from '@/content/sections/hero'
+import { londonEyeContent } from '@/content/sections/londonEye'
 import { templateContent } from '@/content/sections/template'
 import { site } from '@/content/site'
 import type { SectionProps } from '@/content/types'
 import { TemplateSection } from './_Template/TemplateSection'
 import { TowerBridgeHero } from './TowerBridgeHero/TowerBridgeHero'
+import { LondonEyeSection } from './LondonEye/LondonEyeSection'
 import { Footer } from './Footer/Footer'
 
 export type SectionEntry = {
@@ -29,6 +31,12 @@ function defineSection<C>(entry: {
 /** Page order. Adding a section = one line here (docs/SECTIONS.md). */
 export const sections: SectionEntry[] = [
   defineSection({ id: 'top', component: TowerBridgeHero, content: heroContent }),
+  defineSection({
+    id: 'process',
+    navLabel: 'Process',
+    component: LondonEyeSection,
+    content: londonEyeContent,
+  }),
   defineSection({
     id: 'studio',
     navLabel: 'Studio',
