@@ -1,0 +1,78 @@
+/*
+ * Design tokens: the single source for colour, type, space and motion.
+ * Components reference these through Tailwind theme aliases (globals.css) or var().
+ */
+:root {
+  /* Palette: London at blue hour */
+  --ink: #0b1220;
+  --thames: #1c3550;
+  --dusk: #3e5c7a;
+  --stone: #e8e2d6;
+  --lamp: #e8b65a;
+  --bus: #c8202f;
+
+  /* Derived surfaces and text */
+  --ink-90: rgb(11 18 32 / 0.9);
+  --ink-60: rgb(11 18 32 / 0.6);
+  --stone-80: rgb(232 226 214 / 0.8);
+  --stone-60: rgb(232 226 214 / 0.64);
+  --hairline: rgb(232 226 214 / 0.16);
+  --bus-hover: #a81826;
+  --focus-ring: var(--lamp);
+
+  /* Scrim behind text that sits on imagery, for WCAG AA contrast */
+  --scrim: linear-gradient(
+    180deg,
+    rgb(11 18 32 / 0) 0%,
+    rgb(11 18 32 / 0.55) 55%,
+    rgb(11 18 32 / 0.8) 100%
+  );
+
+  /* Fluid type scale: 1.25 ratio at 375px, rising to 1.333 at 1440px */
+  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --step-1: clamp(1.25rem, 1.18rem + 0.33vw, 1.5rem);
+  --step-2: clamp(1.563rem, 1.44rem + 0.56vw, 2rem);
+  --step-3: clamp(1.953rem, 1.75rem + 0.9vw, 2.665rem);
+  --step-4: clamp(2.441rem, 2.1rem + 1.45vw, 3.552rem);
+  --step-5: clamp(3.052rem, 2.5rem + 2.35vw, 4.735rem);
+  --step-6: clamp(3.815rem, 2.9rem + 3.9vw, 6.312rem);
+
+  --lh-tight: 1.05;
+  --lh-snug: 1.2;
+  --lh-body: 1.6;
+  --track-display: -0.01em;
+  --track-eyebrow: 0.18em;
+
+  /* Space: 8px base unit */
+  --space-1: 0.5rem;
+  --space-2: 1rem;
+  --space-3: 1.5rem;
+  --space-4: 2rem;
+  --space-5: 2.5rem;
+  --space-6: 3rem;
+  --space-8: 4rem;
+  --space-10: 5rem;
+  --space-12: 6rem;
+  --space-16: 8rem;
+
+  /* Grid */
+  --grid-columns: 12;
+  --grid-gutter: clamp(1rem, 0.6rem + 1.6vw, 2rem);
+  --page-margin: clamp(1.25rem, 0.5rem + 3.2vw, 4rem);
+  --content-max: 1440px;
+
+  /* Motion (mirrors src/lib/motion.ts; CSS-only loops read these) */
+  --ease-entrance: cubic-bezier(0.215, 0.61, 0.355, 1); /* power3.out */
+  --ease-scene: cubic-bezier(0.87, 0, 0.13, 1); /* expo.inOut */
+  --dur-micro: 0.6s;
+  --dur-entrance: 1.2s;
+  --mist-drift-duration: 90s;
+
+  /* Layers */
+  --z-scene: 0;
+  --z-content: 10;
+  --z-nav: 50;
+  --z-menu: 60;
+  --z-skip: 100;
+}

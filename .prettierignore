@@ -1,0 +1,8 @@
+.next
+node_modules
+package-lock.json
+public/assets
+docs/qa
+test-results
+playwright-report
+AGENTS.md
