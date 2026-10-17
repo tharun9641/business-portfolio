@@ -14,23 +14,22 @@ Read this first when resuming. Update it at the end of every working session.
 | ------------------- | --------------------------------------- | -------------------- |
 | 0 Recon             | approved                                | — (docs only)        |
 | 1 Foundation        | approved, committed                     | `phase-1-foundation` |
-| 2 Assets            | **complete, waiting for PM approval**   | `phase-2-assets`     |
-| 3 Tower Bridge hero | not started (needs approval of Phase 2) | —                    |
+| 2 Assets            | approved, committed                     | `phase-2-assets`     |
+| 3 Tower Bridge hero | **in progress** (PM approved start)     | `phase-3-hero`       |
 
-## Current phase: 2 Assets
+## Current phase: 3 Tower Bridge hero
 
-### Done
-
-- Hero layers built from the PM photo (`scripts/hero/build.mjs`): depth + BiRefNet + guided filter + push-pull fill, plus the route A blue-hour grade. The bascule pivots are in `src/content/generated/heroGeometry.json`.
-- Opened-bridge check: `scripts/hero/preview-open.mjs`.
-- Eye layers and subsection images (`scripts/eye/build.mjs`, with Swin2SR 2× via `scripts/lib/upscale.mjs`).
-- Budget check plus the contact-sheet manifest (`scripts/check-asset-budgets.mjs`): every asset is within budget.
-- `/dev/assets` contact sheet with a live hero layer stack (bascule-angle and separation sliders).
-- Docs updated: ASSETS (Phase 2 status), DECISIONS D-20 and D-26–D-29, CONTENT_NEEDED, OPEN_QUESTIONS.
+### Done (uncommitted, unverified)
+- `src/content/sections/hero.ts` (layers, exits, pin lengths, push, warning lights, bus, mist).
+- `TowerBridgeHero.tsx` (server markup: layered stage, live reflection, lamp glows, shimmer streaks, warning lights, bus SVG, mist, reduced-motion still, h1 + value prop, scroll cue, fade overlay) and `HeroScene.tsx` (GSAP: fade up, bus crossing, pinned scrubbed opening; 200vh desktop / 140vh portrait).
+- Hero CSS appended to `globals.css`; registered first in `registry.tsx` (id `top`); temporary sr-only h1 removed from `page.tsx`.
 
 ### Remaining
-
-None. Waiting for PM approval. Known gaps: `eye/sub-05` and `eye/foreground` are placeholders until pollen is topped up.
+1. Run `npm run typecheck` and `npm run lint` and fix errors.
+2. Open http://localhost:3000 (`npx next dev -p 3000`), and check the arrival fade, bus, opening, layer separation, camera push and fade-out at 1440 and 375. Tune the timings and exits in `hero.ts`.
+3. Check reduced motion (still image, no pin) and the `?tier=low` view.
+4. Add Playwright captures of hero scroll positions plus a recording. Update the QA spec "layers separate" test if section ids changed (the hero now comes first).
+5. Update DECISIONS/MOTION docs, run all checks, `PHASE=phase-3 npx playwright test`, commit on `phase-3-hero`, then **stop for PM approval**.
 
 ## Notes
 

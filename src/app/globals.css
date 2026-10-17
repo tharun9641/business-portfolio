@@ -133,3 +133,129 @@
     display: block;
   }
 }
+
+/* --- Tower Bridge hero (src/components/sections/TowerBridgeHero) --- */
+.hero-frame {
+  --stage-w: max(100vw, calc(100svh * 1.4972));
+  position: absolute;
+  width: var(--stage-w);
+  aspect-ratio: 4240 / 2832;
+  left: calc(50vw - var(--stage-w) * 0.507);
+  top: calc(50svh - var(--stage-w) / 1.4972 * 0.5);
+}
+@media (orientation: portrait) {
+  .hero-frame {
+    --stage-w: 250vw;
+    top: calc(45svh - var(--stage-w) / 1.4972 * 0.45);
+  }
+}
+.hero-stage {
+  position: absolute;
+  inset: 0;
+}
+.hero-reflection {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(var(--horizon) 0 0 0);
+  opacity: 0.22;
+}
+.hero-reflection-flip {
+  position: absolute;
+  inset: 0;
+  transform: scaleY(-1);
+  transform-origin: 50% var(--horizon);
+}
+.hero-lamp,
+.hero-warning,
+.hero-streak {
+  position: absolute;
+  translate: -50% -50%;
+  border-radius: 999px;
+  pointer-events: none;
+}
+.hero-lamp {
+  width: 5%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, rgb(255 236 190 / 0.55), rgb(232 182 90 / 0.18) 35%, transparent 70%);
+  mix-blend-mode: screen;
+  animation: hero-flicker 5s ease-in-out infinite;
+}
+.hero-warning {
+  width: 0.6%;
+  aspect-ratio: 1;
+  background: radial-gradient(circle, #ff5a4f, rgb(200 32 47 / 0.6) 40%, transparent 70%);
+  opacity: 0.35;
+}
+[data-opening] .hero-warning {
+  animation: hero-blink 0.9s steps(2, jump-none) infinite;
+}
+.hero-streak {
+  translate: -50% 0;
+  width: 0.7%;
+  height: 22%;
+  border-radius: 40%;
+  background: linear-gradient(to bottom, rgb(232 182 90 / 0.45), transparent);
+  filter: blur(2px);
+  mix-blend-mode: screen;
+  transform-origin: top;
+  animation: hero-shimmer 2.4s ease-in-out infinite;
+}
+.hero-bus {
+  position: absolute;
+  color: var(--bus);
+  clip-path: inset(0 0 0 0);
+}
+.hero-still {
+  position: absolute;
+  inset: 0;
+  display: none;
+}
+.hero-cue {
+  position: absolute;
+  bottom: 4svh;
+  left: 50%;
+  translate: -50% 0;
+  z-index: var(--z-content);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: var(--step--1);
+  letter-spacing: var(--track-eyebrow);
+  text-transform: uppercase;
+  color: var(--stone-80);
+}
+.hero-cue-line {
+  width: 1px;
+  height: 3rem;
+  background: linear-gradient(to bottom, var(--lamp), transparent);
+  animation: hero-cue 2.2s var(--ease-entrance) infinite;
+  transform-origin: top;
+}
+@keyframes hero-flicker {
+  0%, 100% { opacity: 1; }
+  47% { opacity: 0.86; }
+  50% { opacity: 0.95; }
+}
+@keyframes hero-blink {
+  to { opacity: 1; }
+}
+@keyframes hero-shimmer {
+  0%, 100% { transform: scaleX(1) scaleY(1); opacity: 0.9; }
+  50% { transform: scaleX(1.6) scaleY(0.92); opacity: 0.6; }
+}
+@keyframes hero-cue {
+  0% { transform: scaleY(0); }
+  60% { transform: scaleY(1); opacity: 1; }
+  100% { transform: scaleY(1); opacity: 0; }
+}
+html[data-tier='low'] .hero-reflection,
+html[data-tier='low'] .hero-bus {
+  display: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-hero] .hero-frame { display: none; }
+  [data-hero] .hero-still { display: block; }
+  .hero-cue { display: none; }
+  .hero-lamp, .hero-streak, .hero-cue-line { animation: none; }
+}
