@@ -309,3 +309,21 @@ test('Locations: list selects a landmark, card and map follow', async ({ page })
   )
   await page.locator('#locations').screenshot({ path: path.join(OUT, 'locations-1440.png') })
 })
+
+test('London Eye: wheel holds still within a stop and turns only on a new stop', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?tier=high')
+  await settle(page, 3000)
+  await eyeStop(page, 1)
+  const rot = () => page.locator('#process .eye-wheel').getAttribute('data-rotation')
+  const atStop = await rot()
+  // Nudge less than half a stop: the wheel must not move.
+  await page.mouse.move(700, 450)
+  await page.mouse.wheel(0, 120)
+  await page.waitForTimeout(250)
+  expect(await rot()).toBe(atStop)
+  await eyeStop(page, 2)
+  expect(Number(await rot())).toBeLessThan(Number(atStop) - 0.5)
+})

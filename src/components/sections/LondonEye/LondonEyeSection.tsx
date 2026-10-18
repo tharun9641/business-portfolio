@@ -18,7 +18,6 @@ import {
   featuredCapsules,
   progressForIndex,
   rotationForIndex,
-  rotationForProgress,
 } from './wheelMath'
 
 const loadWheel3D = () => import('./Wheel3D')
@@ -159,7 +158,6 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
               ease: 'power1.inOut',
             },
             onUpdate: (self) => {
-              applyRotation(rotationForProgress(self.progress, featured, total, boarding))
               setActive(activeIndex(self.progress, n))
             },
           },
@@ -200,6 +198,26 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
   }, [])
 
   // Panel transition: the old stop exits up, the new one enters in sequence.
+  // The wheel holds still while a stop is read, and turns only when a new stop becomes active:
+  // one smooth ride from capsule to capsule (scene easing), never a scroll-scrubbed creep.
+  const spin = useRef<gsap.core.Tween | null>(null)
+  useGSAP(
+    () => {
+      const target = rotationForIndex(active, featuredCapsules(n, total), total, boarding)
+      const from = rotation.current
+      spin.current?.kill()
+      if (from === null || reducedMotion) return applyRotation(target)
+      const proxy = { rot: from }
+      spin.current = gsap.to(proxy, {
+        rot: target,
+        duration: DURATION.entrance * 1.25,
+        ease: EASE.scene,
+        onUpdate: () => applyRotation(proxy.rot),
+      })
+    },
+    { dependencies: [active, boarding, n, total, reducedMotion] },
+  )
+
   const previous = useRef(0)
   const splits = useRef<SplitText[]>([])
   useGSAP(

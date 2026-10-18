@@ -5,9 +5,7 @@ import {
   BOARDING,
   capsuleAngle,
   featuredCapsules,
-  progressForIndex,
   rotationForIndex,
-  rotationForProgress,
   TAU,
 } from './wheelMath.ts'
 
@@ -24,21 +22,17 @@ test('featured capsule i sits at the boarding point at subsection i', () => {
   const featured = featuredCapsules(5, 32)
   for (const boarding of [BOARDING.desktop, BOARDING.mobile]) {
     for (let i = 0; i < 5; i++) {
-      const rot = rotationForProgress(progressForIndex(i, 5), featured, 32, boarding)
+      const rot = rotationForIndex(i, featured, 32, boarding)
       close(norm(capsuleAngle(featured[i], 32) + rot), norm(boarding))
     }
   }
 })
 
-test('the wheel turns one way only as progress increases', () => {
+test('each next stop turns the wheel the same way (clockwise)', () => {
   const featured = featuredCapsules(6, 32)
-  let prev = rotationForProgress(0, featured, 32, 0)
-  for (let p = 0.01; p <= 1; p += 0.01) {
-    const r = rotationForProgress(p, featured, 32, 0)
-    assert.ok(r <= prev + 1e-12)
-    prev = r
+  for (let i = 1; i < 6; i++) {
+    assert.ok(rotationForIndex(i, featured, 32, 0) < rotationForIndex(i - 1, featured, 32, 0))
   }
-  close(rotationForProgress(1, featured, 32, 0), rotationForIndex(5, featured, 32, 0))
 })
 
 test('active index rounds to the nearest stop and clamps', () => {

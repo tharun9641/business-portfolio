@@ -27,22 +27,6 @@ export function rotationForIndex(i: number, featured: number[], total: number, b
   return boarding - capsuleAngle(featured[i], total)
 }
 
-/** Rotation for a scroll progress 0..1 across n subsections (linear between stops). */
-export function rotationForProgress(
-  p: number,
-  featured: number[],
-  total: number,
-  boarding: number,
-) {
-  const n = featured.length
-  if (n === 1) return rotationForIndex(0, featured, total, boarding)
-  const t = Math.min(1, Math.max(0, p)) * (n - 1)
-  const i = Math.min(n - 2, Math.floor(t))
-  const a = rotationForIndex(i, featured, total, boarding)
-  const b = rotationForIndex(i + 1, featured, total, boarding)
-  return a + (b - a) * (t - i)
-}
-
 /** Subsection whose capsule is nearest the boarding point. */
 export function activeIndex(p: number, n: number): number {
   return Math.min(n - 1, Math.max(0, Math.round(Math.min(1, Math.max(0, p)) * (n - 1))))

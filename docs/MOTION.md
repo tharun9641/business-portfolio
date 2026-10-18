@@ -73,7 +73,7 @@ All values come from `src/content/sections/hero.ts`.
 ## London Eye (`LondonEyeSection`, `Wheel3D`, `Wheel2D`)
 
 - **Pin:** N × 100vh, scrubbed, with gentle snapping to each stop (`snapTo: 1/(N−1)`, `inertia: false`).
-- **Turning:** scroll progress → `rotationForProgress()` → `setRotation()` on whichever wheel is mounted. Capsules counter-rotate to stay level.
+- **Turning:** the wheel holds still while a stop is being read. When the active stop changes, it rides to the next capsule in one tween (1.5 s, `expo.inOut`) through `setRotation()` on whichever wheel is mounted. Capsules counter-rotate to stay level. Under reduced motion it jumps.
 - **On arrival:**
   - the capsule lights to `--lamp` and scales to 1.08, with a halo at the boarding point;
   - the gold connector draws (stroke-dashoffset, 0.6 s);
