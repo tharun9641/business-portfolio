@@ -152,3 +152,13 @@ All hero layers share one 4240×2832 canvas, so they register exactly. Alpha lay
 | `shared/mist-1..3.webp`        | ready (procedural)                         |
 | `shared/template/*`            | placeholders for the `_Template` demo only |
 | `shared/og.jpg`, logo, favicon | Phase 5 / placeholder                      |
+
+### Locations (Phase 7)
+
+All images are 1200×900 (4:3) AVIF in `public/assets/locations/`, shown on the location card with a masked reveal.
+
+| File                                                                                                                            | Status                                                                                                    |
+| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `tower-bridge.avif`                                                                                                             | ready (crop of the hero composite)                                                                        |
+| `westminster.avif`                                                                                                              | ready (crop of the Eye master)                                                                            |
+| `tower-of-london.avif`, `the-shard.avif`, `st-pauls.avif`, `london-eye.avif`, `trafalgar-square.avif`, `buckingham-palace.avif` | **placeholder** (blue-hour gradient). Needs real images; replace them as drop-ins with the same filenames |

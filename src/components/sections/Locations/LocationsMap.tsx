@@ -1,6 +1,7 @@
 'use client'
 
 import { useId, useRef, useState } from 'react'
+import { NearImage } from '@/components/ui/NearImage'
 import type { LocationsContent } from '@/content/sections/locations'
 import { gsap, useGSAP } from '@/lib/gsap'
 import { DURATION, EASE, SCRUB } from '@/lib/motion'
@@ -59,6 +60,33 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
       })
     },
     { scope: root },
+  )
+
+  // Each new place: its photo wipes up and settles, like the other masked reveals on the site.
+  const firstShow = useRef(true)
+  useGSAP(
+    () => {
+      if (firstShow.current) return void (firstShow.current = false)
+      const mm = gsap.matchMedia()
+      mm.add('(prefers-reduced-motion: no-preference)', () => {
+        const q = gsap.utils.selector(root)
+        gsap.fromTo(
+          q('[data-loc-photo]'),
+          { clipPath: 'inset(100% 0% 0% 0%)' },
+          {
+            clipPath: 'inset(0% 0% 0% 0%)',
+            duration: DURATION.entrance * 0.8,
+            ease: EASE.entrance,
+          },
+        )
+        gsap.fromTo(
+          q('[data-loc-photo] > *'),
+          { scale: 1.12 },
+          { scale: 1, duration: DURATION.entrance, ease: EASE.entrance },
+        )
+      })
+    },
+    { scope: root, dependencies: [active] },
   )
 
   return (
@@ -156,19 +184,31 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
         <div
           id={`${uid}-card`}
           aria-live="polite"
-          className="rounded-sm border border-hairline bg-ink/70 p-6 backdrop-blur-md"
+          className="overflow-hidden rounded-sm border border-hairline bg-ink/70 backdrop-blur-md"
         >
-          <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{loc.area}</p>
-          <h3 className="mt-2 font-display text-step-3 leading-snug text-stone">{loc.name}</h3>
-          <p className="mt-3 text-step-0 leading-body text-stone-80">{loc.body}</p>
-          <a
-            className="link mt-4 inline-block text-step--1"
-            href={mapsHref}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            {content.openInMaps} <span aria-hidden>↗</span>
-          </a>
+          <div data-loc-photo className="relative aspect-[4/3] overflow-hidden">
+            <NearImage
+              key={loc.image.src}
+              src={loc.image.src}
+              alt={loc.image.alt}
+              fill
+              sizes="(min-width: 768px) 30vw, 90vw"
+              className="object-cover"
+            />
+          </div>
+          <div className="p-6">
+            <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{loc.area}</p>
+            <h3 className="mt-2 font-display text-step-3 leading-snug text-stone">{loc.name}</h3>
+            <p className="mt-3 text-step-0 leading-body text-stone-80">{loc.body}</p>
+            <a
+              className="link mt-4 inline-block text-step--1"
+              href={mapsHref}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {content.openInMaps} <span aria-hidden>↗</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
