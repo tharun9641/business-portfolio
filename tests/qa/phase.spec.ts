@@ -307,7 +307,7 @@ test('Locations: list selects a landmark, card and map follow', async ({ page })
     'href',
     /google\.com\/maps\/search\/\?api=1&query=Palace%20of%20Westminster/,
   )
-  const photo = page.locator('#locations [data-loc-photo] img')
+  const photo = page.locator('#locations [data-loc-current] img')
   await expect(photo).toHaveAttribute('alt', /Palace of Westminster/)
   await expect(photo).toHaveJSProperty('complete', true)
   await page.locator('#locations').screenshot({ path: path.join(OUT, 'locations-1440.png') })

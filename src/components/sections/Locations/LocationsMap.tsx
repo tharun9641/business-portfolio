@@ -16,6 +16,13 @@ const river = smoothPath(THAMES.map(project))
  */
 export function LocationsMap({ content }: { content: LocationsContent }) {
   const [active, setActive] = useState(0)
+  // The outgoing place stays underneath while the new photo reveals over it.
+  const [prev, setPrev] = useState<number | null>(null)
+  const select = (i: number) => {
+    if (i === active) return
+    setPrev(active)
+    setActive(i)
+  }
   const root = useRef<HTMLDivElement>(null)
   const uid = useId()
   const loc = content.locations[active]
@@ -38,6 +45,16 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
             duration: DURATION.entrance,
             ease: EASE.entrance,
             scrollTrigger: { trigger: photo, start: 'top 80%', once: true },
+          },
+        )
+        // Slow drift of the photo inside its frame while the section scrolls past.
+        gsap.fromTo(
+          q('[data-loc-stack]'),
+          { yPercent: -4 },
+          {
+            yPercent: 4,
+            ease: EASE.scrub,
+            scrollTrigger: { trigger: photo, start: 'top bottom', end: 'bottom top', scrub: SCRUB },
           },
         )
         gsap.fromTo(
@@ -73,7 +90,8 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
     { scope: root },
   )
 
-  // Each new place: its photo wipes up and settles, like the other masked reveals on the site.
+  // Each new place: its photo wipes up over the last one and settles from a slow push-in, while
+  // the card's lines rise in turn. Tweens overwrite, so rapid picks never stack or stall.
   const firstShow = useRef(true)
   useGSAP(
     () => {
@@ -82,18 +100,48 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const q = gsap.utils.selector(root)
         gsap.fromTo(
-          q('[data-loc-photo]'),
+          q('[data-loc-current]'),
           { clipPath: 'inset(100% 0% 0% 0%)' },
           {
             clipPath: 'inset(0% 0% 0% 0%)',
-            duration: DURATION.entrance * 0.8,
-            ease: EASE.entrance,
+            duration: DURATION.entrance,
+            ease: EASE.scene,
+            overwrite: true,
           },
         )
         gsap.fromTo(
-          q('[data-loc-photo] > *'),
-          { scale: 1.12 },
-          { scale: 1, duration: DURATION.entrance, ease: EASE.entrance },
+          q('[data-loc-current] > *'),
+          { scale: 1.18 },
+          { scale: 1, duration: DURATION.entrance * 1.6, ease: EASE.entrance, overwrite: true },
+        )
+        gsap.fromTo(
+          q('[data-loc-prev] > *'),
+          { scale: 1 },
+          { scale: 1.06, duration: DURATION.entrance, ease: EASE.scene, overwrite: true },
+        )
+        gsap.fromTo(
+          q('[data-loc-card] > *'),
+          { autoAlpha: 0, y: 14 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: DURATION.micro,
+            ease: EASE.entrance,
+            stagger: 0.07,
+            delay: 0.25,
+            overwrite: true,
+          },
+        )
+        gsap.fromTo(
+          q('[data-loc-pin-active]'),
+          { scale: 0.4 },
+          {
+            scale: 1,
+            transformOrigin: '50% 50%',
+            duration: DURATION.micro,
+            ease: 'back.out(3)',
+            overwrite: true,
+          },
         )
       })
     },
@@ -108,14 +156,29 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
         data-loc-photo
         className="relative col-span-4 aspect-[4/3] overflow-hidden rounded-sm border border-hairline md:col-span-8"
       >
-        <NearImage
-          key={loc.image.src}
-          src={loc.image.src}
-          alt={loc.image.alt}
-          fill
-          sizes="(min-width: 768px) 60vw, 92vw"
-          className="object-cover"
-        />
+        <div data-loc-stack className="absolute inset-x-0 -inset-y-[5%]">
+          {prev !== null && prev !== active ? (
+            <div data-loc-prev aria-hidden className="absolute inset-0 overflow-hidden">
+              <NearImage
+                key={content.locations[prev].image.src}
+                src={content.locations[prev].image.src}
+                alt=""
+                fill
+                sizes="(min-width: 768px) 60vw, 92vw"
+                className="object-cover"
+              />
+            </div>
+          ) : null}
+          <div data-loc-current key={loc.image.src} className="absolute inset-0 overflow-hidden">
+            <NearImage
+              src={loc.image.src}
+              alt={loc.image.alt}
+              fill
+              sizes="(min-width: 768px) 60vw, 92vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="col-span-4 flex flex-col gap-6 md:col-span-4">
@@ -171,15 +234,13 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
                 data-loc-pin
                 transform={`translate(${x} ${y})`}
                 className="cursor-pointer"
-                onClick={() => setActive(i)}
+                onClick={() => select(i)}
               >
                 <circle r="40" fill="transparent" />
+                {/* Only the chosen place breathes; eight pulsing dots read as noise. */}
+                {i === active ? <circle r="16" className="loc-pulse" /> : null}
                 <circle
-                  r="16"
-                  className="loc-pulse"
-                  style={{ animationDelay: `${(i * 0.31) % 2.4}s` }}
-                />
-                <circle
+                  data-loc-pin-active={i === active || undefined}
                   r={i === active ? 14 : 10}
                   className={i === active ? 'fill-lamp' : 'fill-stone/80'}
                 />
@@ -206,7 +267,7 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
                 type="button"
                 aria-pressed={i === active}
                 aria-controls={`${uid}-card`}
-                onClick={() => setActive(i)}
+                onClick={() => select(i)}
                 className="loc-chip"
               >
                 {l.name}
@@ -215,7 +276,7 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
           ))}
         </ul>
 
-        <div id={`${uid}-card`} aria-live="polite">
+        <div id={`${uid}-card`} data-loc-card aria-live="polite">
           <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{loc.area}</p>
           <h3 className="mt-2 font-display text-step-3 leading-snug text-stone">{loc.name}</h3>
           <p className="mt-3 text-step-0 leading-body text-stone-80">{loc.body}</p>
