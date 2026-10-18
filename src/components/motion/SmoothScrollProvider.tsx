@@ -20,6 +20,15 @@ type SmoothScrollContextValue = {
 
 const SmoothScrollContext = createContext<SmoothScrollContextValue | null>(null)
 
+// True while Lenis runs a programmatic scroll (menu, anchors, "go to stop"): section transitions
+// stay out of the way of those. Any user input clears it, in case a jump is cut short.
+let autoScrolling = false
+const markAuto = {
+  onStart: () => void (autoScrolling = true),
+  onComplete: () => void (autoScrolling = false),
+}
+export const isAutoScrolling = () => autoScrolling
+
 function detectTier(): DeviceTier {
   const override = new URLSearchParams(window.location.search).get('tier')
   return isDeviceTier(override) ? override : classifyTier(readTierSignals())
@@ -42,8 +51,11 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   // One Lenis instance, driven by GSAP's ticker so ScrollTrigger and Lenis share a frame.
   useEffect(() => {
     if (reducedMotion) return
-    const instance = new Lenis({ autoRaf: false, anchors: true, lerp: 0.1 })
+    const instance = new Lenis({ autoRaf: false, anchors: markAuto, lerp: 0.1 })
     instance.on('scroll', ScrollTrigger.update)
+    const userInput = () => void (autoScrolling = false)
+    const inputs = ['wheel', 'touchstart', 'keydown'] as const
+    inputs.forEach((t) => window.addEventListener(t, userInput, { passive: true }))
     const raf = (time: number) => instance.raf(time * 1000)
     gsap.ticker.add(raf)
     gsap.ticker.lagSmoothing(0)
@@ -51,6 +63,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     setLenis(instance)
     return () => {
       gsap.ticker.remove(raf)
+      inputs.forEach((t) => window.removeEventListener(t, userInput))
       instance.destroy()
       setLenis(null)
     }
@@ -66,7 +79,11 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
   const scrollTo = useCallback<SmoothScrollContextValue['scrollTo']>(
     (target, options = {}) => {
       if (lenis) {
-        lenis.scrollTo(target, { offset: options.offset, immediate: options.immediate })
+        lenis.scrollTo(target, {
+          offset: options.offset,
+          immediate: options.immediate,
+          ...markAuto,
+        })
         return
       }
       const el = typeof target === 'string' ? document.querySelector<HTMLElement>(target) : target
