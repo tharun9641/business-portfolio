@@ -75,9 +75,7 @@ All values come from `src/content/sections/hero.ts`.
 - **Pin:** N × 100vh, scrubbed, with gentle snapping to each stop (`snapTo: 1/(N−1)`, `inertia: false`).
 - **Turning:** the wheel holds still while a stop is being read. When the active stop changes, it rides to the next capsule in one tween (1.5 s, `expo.inOut`) through `setRotation()` on whichever wheel is mounted. Capsules counter-rotate to stay level. Under reduced motion it jumps.
 - **The light lives at the boarding point** (3 o'clock on desktop, 6 o'clock on mobile). Whichever pod is there is lit (`--lamp`, ×1.08, halo), so during a ride the light passes from pod to pod, as worked out by `capsuleAt()`.
-- **On arrival:**
-  - the gold connector draws (stroke-dashoffset, 0.6 s);
-  - the old panel exits up, then the new panel enters: number, then SplitText heading lines, then body, then image clip-reveal with a 1.15 → 1 settle.
+- **One ride per stop change**, on a single timeline: the wheel turns (1.5 s, `expo.inOut`) while the old stop scrolls up and fades. The new stop scrolls in from below between 40% and 100% of the turn and lands as its capsule arrives. The number, heading lines (SplitText) and body then appear (70–100%) and the connector draws, with the image clip-revealing alongside. If stops change rapidly, each new ride starts from wherever the last one had reached.
 - **Background:** sky, far bank, water and mist drift by depth over the pin.
 - **Ambient:** capsule lamps twinkle (shader colour, per capsule phase) and the halo pulses.
 - **Mobile (≤767px):** the wheel arc sits at the top with boarding at 6 o'clock. Dots run in a row at the bottom, and a horizontal swipe on the content moves to the next or previous stop.

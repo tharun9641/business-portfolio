@@ -197,27 +197,6 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     return () => io.disconnect()
   }, [])
 
-  // Panel transition: the old stop exits up, the new one enters in sequence.
-  // The wheel holds still while a stop is read, and turns only when a new stop becomes active:
-  // one smooth ride from capsule to capsule (scene easing), never a scroll-scrubbed creep.
-  const spin = useRef<gsap.core.Tween | null>(null)
-  useGSAP(
-    () => {
-      const target = rotationForIndex(active, featuredCapsules(n, total), total, boarding)
-      const from = rotation.current
-      spin.current?.kill()
-      if (from === null || reducedMotion) return applyRotation(target)
-      const proxy = { rot: from }
-      spin.current = gsap.to(proxy, {
-        rot: target,
-        duration: DURATION.entrance * 1.25,
-        ease: EASE.scene,
-        onUpdate: () => applyRotation(proxy.rot),
-      })
-    },
-    { dependencies: [active, boarding, n, total, reducedMotion] },
-  )
-
   const previous = useRef(0)
   const splits = useRef<SplitText[]>([])
   useGSAP(
@@ -237,63 +216,86 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     },
     { scope: section, dependencies: [n] },
   )
+  // One ride per stop change, on one timeline: the wheel turns, the old stop scrolls away as it
+  // departs, the new stop scrolls in and lands as its capsule arrives, then its text appears.
+  // Rapid changes start the next ride from wherever the last one had got to.
+  const ride = useRef<gsap.core.Timeline | null>(null)
   useGSAP(
     () => {
       const el = section.current
-      const from = previous.current
+      const target = rotationForIndex(active, featuredCapsules(n, total), total, boarding)
+      const fromStop = previous.current
       previous.current = active
-      if (!el || from === active || reducedMotion) return
+      const fromRot = rotation.current
+      ride.current?.kill()
+      if (!el || fromRot === null || reducedMotion || fromStop === active) {
+        applyRotation(target)
+        return
+      }
       const q = gsap.utils.selector(el)
       const panels = q('[data-eye-panel]')
       const next = panels[active]
-      const prev = panels[from]
-      const dir = active > from ? 1 : -1
-      gsap.killTweensOf([prev, next, ...next.querySelectorAll('*')])
-      gsap.to(prev, {
-        yPercent: -8 * dir,
-        opacity: 0,
-        duration: DURATION.micro,
-        ease: EASE.entrance,
-      })
-      gsap.set(next, { yPercent: 0, opacity: 1 })
+      const prev = panels[fromStop]
+      const dir = active > fromStop ? 1 : -1
+      const SPIN = DURATION.entrance * 1.25
+      const proxy = { rot: fromRot }
+      panels.forEach((p) => p !== prev && p !== next && gsap.set(p, { opacity: 0, yPercent: 0 }))
       const lines = splits.current[active]?.lines ?? []
-      gsap
-        .timeline({ defaults: { ease: EASE.entrance } })
-        .from(next.querySelector('[data-eye-number]'), {
-          y: 16 * dir,
-          autoAlpha: 0,
-          duration: DURATION.micro,
+
+      ride.current = gsap
+        .timeline()
+        .to(proxy, {
+          rot: target,
+          duration: SPIN,
+          ease: EASE.scene,
+          onUpdate: () => applyRotation(proxy.rot),
         })
-        .from(
-          lines,
-          { yPercent: 110 * dir, duration: DURATION.entrance * 0.8, stagger: 0.06 },
-          0.08,
-        )
-        .from(
-          next.querySelector('[data-eye-body]'),
-          { y: 24 * dir, autoAlpha: 0, duration: DURATION.entrance * 0.8 },
-          0.2,
+        .to(prev, { yPercent: -35 * dir, opacity: 0, duration: SPIN * 0.45, ease: 'power2.in' }, 0)
+        .fromTo(
+          next,
+          { yPercent: 35 * dir, opacity: 0 },
+          { yPercent: 0, opacity: 1, duration: SPIN * 0.6, ease: EASE.entrance },
+          SPIN * 0.4,
         )
         .fromTo(
           next.querySelector('[data-eye-image]'),
           { clipPath: dir > 0 ? 'inset(100% 0% 0% 0%)' : 'inset(0% 0% 100% 0%)' },
-          { clipPath: 'inset(0% 0% 0% 0%)', duration: DURATION.entrance },
-          0.1,
+          { clipPath: 'inset(0% 0% 0% 0%)', duration: SPIN * 0.55, ease: EASE.entrance },
+          SPIN * 0.45,
         )
         .fromTo(
-          next.querySelector('[data-eye-image] img'),
+          next.querySelectorAll('[data-eye-image] > *'),
           { scale: 1.15 },
-          { scale: 1, duration: DURATION.entrance * 1.3 },
-          0.1,
+          { scale: 1, duration: SPIN * 0.8, ease: EASE.entrance },
+          SPIN * 0.45,
+        )
+        // Text appears as the capsule arrives.
+        .fromTo(
+          next.querySelector('[data-eye-number]'),
+          { y: 16 * dir, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: DURATION.micro, ease: EASE.entrance },
+          SPIN * 0.7,
+        )
+        .fromTo(
+          lines,
+          { yPercent: 110 * dir },
+          { yPercent: 0, duration: DURATION.entrance * 0.7, stagger: 0.06, ease: EASE.entrance },
+          SPIN * 0.75,
+        )
+        .fromTo(
+          next.querySelector('[data-eye-body]'),
+          { y: 24 * dir, autoAlpha: 0 },
+          { y: 0, autoAlpha: 1, duration: DURATION.entrance * 0.7, ease: EASE.entrance },
+          SPIN * 0.85,
         )
         .fromTo(
           q('[data-eye-connector] path'),
           { strokeDashoffset: 1 },
-          { strokeDashoffset: 0, duration: DURATION.micro },
-          0.05,
+          { strokeDashoffset: 0, duration: DURATION.micro, ease: EASE.entrance },
+          SPIN * 0.9,
         )
     },
-    { scope: section, dependencies: [active] },
+    { scope: section, dependencies: [active, boarding, n, total, reducedMotion] },
   )
 
   // Tabs: arrow keys move between stops (roving tabindex).

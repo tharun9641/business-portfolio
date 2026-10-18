@@ -330,3 +330,28 @@ test('London Eye: wheel holds still within a stop and turns only on a new stop',
   await eyeStop(page, 2)
   expect(Number(await rot())).toBeLessThan(Number(atStop) - 0.5)
 })
+
+test('London Eye: panel and text arrive in sync with the wheel', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/?tier=high')
+  await settle(page, 3000)
+  await eyeStop(page, 1)
+  const body = page.locator('#process [data-eye-panel]').nth(2).locator('[data-eye-body]')
+  const target = await page.evaluate(() => {
+    const sp = document.getElementById('process')!.parentElement!
+    return sp.getBoundingClientRect().top + scrollY + (sp.offsetHeight - innerHeight) / 2
+  })
+  await page.evaluate((y) => window.scrollTo(0, y), Math.round(target))
+  // Early in the ride the wheel is turning and the new stop's text has not appeared yet.
+  await page.waitForTimeout(500)
+  expect(Number(await body.evaluate((e) => getComputedStyle(e).opacity))).toBeLessThan(0.1)
+  // Once the capsule has arrived, the panel has landed and its text is fully visible.
+  await page.waitForTimeout(2200)
+  expect(Number(await body.evaluate((e) => getComputedStyle(e).opacity))).toBe(1)
+  expect(
+    await page
+      .locator('#process [data-eye-panel]')
+      .nth(2)
+      .evaluate((e) => new DOMMatrix(getComputedStyle(e).transform).m42),
+  ).toBe(0)
+})
