@@ -585,6 +585,18 @@ html[data-tier='low'] .hero-bus {
   background: rgb(232 182 90 / 0.12);
   color: var(--stone);
 }
+/* Floodlight sweep on a new location photo: a soft warm band, screened over the image. */
+.loc-sweep {
+  background: linear-gradient(
+    to right,
+    transparent 15%,
+    rgb(232 182 90 / 0.1) 38%,
+    rgb(255 236 200 / 0.32) 50%,
+    rgb(232 182 90 / 0.1) 62%,
+    transparent 85%
+  );
+  mix-blend-mode: screen;
+}
 /* Foreground light particles: two offset dot fields, GPU-cheap (a static background). */
 .loc-particles {
   background-image:

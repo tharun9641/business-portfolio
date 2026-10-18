@@ -3,13 +3,11 @@
 import { useId, useRef, useState } from 'react'
 import { NearImage } from '@/components/ui/NearImage'
 import type { LocationsContent } from '@/content/sections/locations'
-import { gsap, useGSAP } from '@/lib/gsap'
-import { DURATION, EASE, SCRUB } from '@/lib/motion'
+import { gsap, SplitText, useGSAP } from '@/lib/gsap'
+import { DURATION, EASE, SCRUB, STAGGER } from '@/lib/motion'
 import { MAP_H, MAP_W, project, smoothPath, THAMES } from './geo'
 
 const river = smoothPath(THAMES.map(project))
-/** Strips in the photo's shutter reveal on each change of place. */
-const SHUTTERS = 5
 
 /**
  * Night map of central London: the Thames draws itself as you scroll, landmark pins pop in, and
@@ -29,6 +27,14 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
   const uid = useId()
   const loc = content.locations[active]
   const pins = content.locations.map((l) => project(l.latLon))
+  // Flight arc from the previous pin to this one, bowed upward like a flight path on a chart.
+  const arcD = (() => {
+    if (prev === null || prev === active) return null
+    const [x0, y0] = pins[prev]
+    const [x1, y1] = pins[active]
+    const lift = Math.max(60, Math.hypot(x1 - x0, y1 - y0) * 0.35)
+    return `M${x0} ${y0} Q${(x0 + x1) / 2} ${Math.min(y0, y1) - lift} ${x1} ${y1}`
+  })()
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.mapsQuery)}`
 
   useGSAP(
@@ -92,8 +98,10 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
     { scope: root },
   )
 
-  // Each new place: its photo opens over the last one in shutters and settles from a slow push-in, while
-  // the card's lines rise in turn. Tweens overwrite, so rapid picks never stack or stall.
+  // Each new place, as one ~1.4 s handover: the photo wipes up over the last one and settles from
+  // a slow push-in; a gold arc flies from the old pin to the new one, carrying a light that lands
+  // as the photo arrives; a floodlight sweeps the new photo; the name rises line by line out of a
+  // mask. Tweens overwrite, so rapid picks never stack or stall.
   const firstShow = useRef(true)
   useGSAP(
     () => {
@@ -101,26 +109,17 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const q = gsap.utils.selector(root)
-        // Shutters: the new photo opens in vertical strips, left to right, each dropping from the
-        // top. One polygon clip on the single image (strips joined along the top edge with zero
-        // area), so there is one <img> and one alt text throughout.
-        const el = q('[data-loc-current]')[0] as HTMLElement | undefined
-        if (el) {
-          const strips = Array.from({ length: SHUTTERS }, () => ({ v: 0 }))
-          const draw = () => {
-            el.style.clipPath = `polygon(${strips
-              .map(({ v }, i) => {
-                const x0 = (i * 100) / SHUTTERS
-                const x1 = ((i + 1) * 100) / SHUTTERS
-                return `${x0}% 0%, ${x0}% ${v}%, ${x1}% ${v}%, ${x1}% 0%`
-              })
-              .join(', ')})`
-          }
-          draw()
-          gsap
-            .timeline({ onUpdate: draw, onComplete: () => void (el.style.clipPath = '') })
-            .to(strips, { v: 100, duration: 0.85, ease: 'power3.inOut', stagger: 0.09 })
-        }
+        const FLIGHT = 0.9
+        gsap.fromTo(
+          q('[data-loc-current]'),
+          { clipPath: 'inset(100% 0% 0% 0%)' },
+          {
+            clipPath: 'inset(0% 0% 0% 0%)',
+            duration: DURATION.entrance,
+            ease: EASE.scene,
+            overwrite: true,
+          },
+        )
         gsap.fromTo(
           q('[data-loc-current] > *'),
           { scale: 1.18 },
@@ -131,19 +130,53 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
           { scale: 1 },
           { scale: 1.06, duration: DURATION.entrance, ease: EASE.scene, overwrite: true },
         )
+
+        // Floodlight: a warm band crosses the photo once, as if its lights come on.
         gsap.fromTo(
-          q('[data-loc-card] > *'),
-          { autoAlpha: 0, y: 14 },
+          q('[data-loc-sweep]'),
+          { xPercent: 0, skewX: -14, autoAlpha: 1 },
           {
-            autoAlpha: 1,
-            y: 0,
-            duration: DURATION.micro,
-            ease: EASE.entrance,
-            stagger: 0.07,
-            delay: 0.25,
+            xPercent: 300,
+            duration: 1.3,
+            delay: 0.55,
+            ease: 'power2.inOut',
             overwrite: true,
+            onComplete() {
+              gsap.set(this.targets(), { autoAlpha: 0 })
+            },
           },
         )
+
+        // Flight: the arc draws from the old pin; the light rides its tip and lands on the new pin.
+        const arc = root.current?.querySelector<SVGPathElement>('[data-loc-arc]')
+        const comet = q('[data-loc-comet]')[0]
+        if (arc && comet) {
+          const len = arc.getTotalLength()
+          const ride = { p: 0 }
+          gsap
+            .timeline()
+            .set([arc, comet], { autoAlpha: 1 })
+            .fromTo(
+              arc,
+              { strokeDashoffset: 1 },
+              { strokeDashoffset: 0, duration: FLIGHT, ease: 'power2.inOut' },
+              0,
+            )
+            .to(
+              ride,
+              {
+                p: 1,
+                duration: FLIGHT,
+                ease: 'power2.inOut',
+                onUpdate: () => {
+                  const pt = arc.getPointAtLength(ride.p * len)
+                  comet.setAttribute('transform', `translate(${pt.x} ${pt.y})`)
+                },
+              },
+              0,
+            )
+            .to([arc, comet], { autoAlpha: 0, duration: 0.5, ease: EASE.entrance }, FLIGHT)
+        }
         gsap.fromTo(
           q('[data-loc-pin-active]'),
           { scale: 0.4 },
@@ -151,7 +184,35 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
             scale: 1,
             transformOrigin: '50% 50%',
             duration: DURATION.micro,
+            delay: arc ? FLIGHT : 0,
             ease: 'back.out(3)',
+            overwrite: true,
+          },
+        )
+
+        // Text handover: the name rises out of a mask (as headings do site-wide), then the rest.
+        const name = q('[data-loc-name]')[0]
+        if (name) {
+          const split = SplitText.create(name, { type: 'lines', mask: 'lines' })
+          gsap.from(split.lines, {
+            yPercent: 110,
+            duration: DURATION.entrance * 0.8,
+            ease: EASE.entrance,
+            stagger: STAGGER.lines,
+            delay: 0.3,
+            onComplete: () => split.revert(),
+          })
+        }
+        gsap.fromTo(
+          q('[data-loc-card] > :not([data-loc-name])'),
+          { autoAlpha: 0, y: 14 },
+          {
+            autoAlpha: 1,
+            y: 0,
+            duration: DURATION.micro,
+            ease: EASE.entrance,
+            stagger: 0.07,
+            delay: 0.4,
             overwrite: true,
           },
         )
@@ -191,6 +252,11 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
             />
           </div>
         </div>
+        <div
+          data-loc-sweep
+          aria-hidden
+          className="loc-sweep pointer-events-none absolute inset-y-0 -left-1/2 w-1/2 opacity-0"
+        />
       </div>
 
       <div className="col-span-4 flex flex-col gap-6 md:col-span-4">
@@ -240,6 +306,25 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
                 {content.riverLabel}
               </textPath>
             </text>
+            {arcD ? (
+              <>
+                <path
+                  data-loc-arc
+                  d={arcD}
+                  fill="none"
+                  className="stroke-lamp"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  pathLength={1}
+                  strokeDasharray={1}
+                  opacity="0"
+                />
+                <g data-loc-comet opacity="0">
+                  <circle r="22" className="fill-lamp/25" />
+                  <circle r="9" className="fill-lamp" />
+                </g>
+              </>
+            ) : null}
             {pins.map(([x, y], i) => (
               <g
                 key={content.locations[i].name}
@@ -290,7 +375,13 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
 
         <div id={`${uid}-card`} data-loc-card aria-live="polite">
           <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{loc.area}</p>
-          <h3 className="mt-2 font-display text-step-3 leading-snug text-stone">{loc.name}</h3>
+          <h3
+            key={loc.name}
+            data-loc-name
+            className="mt-2 font-display text-step-3 leading-snug text-stone"
+          >
+            {loc.name}
+          </h3>
           <p className="mt-3 text-step-0 leading-body text-stone-80">{loc.body}</p>
           <a
             className="link mt-4 inline-block text-step--1"
