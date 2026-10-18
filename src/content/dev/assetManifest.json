@@ -242,17 +242,6 @@
     "ok": true
   },
   {
-    "src": "/assets/locations/tate-modern.avif",
-    "group": "locations",
-    "width": 1200,
-    "height": 900,
-    "alpha": false,
-    "sourceKB": 81,
-    "servedKB": 98,
-    "budgetKB": 250,
-    "ok": true
-  },
-  {
     "src": "/assets/locations/the-shard.avif",
     "group": "locations",
     "width": 1200,
@@ -282,6 +271,17 @@
     "alpha": false,
     "sourceKB": 122,
     "servedKB": 149,
+    "budgetKB": 250,
+    "ok": true
+  },
+  {
+    "src": "/assets/locations/westminster-abbey.avif",
+    "group": "locations",
+    "width": 1200,
+    "height": 900,
+    "alpha": false,
+    "sourceKB": 163,
+    "servedKB": 203,
     "budgetKB": 250,
     "ok": true
   },

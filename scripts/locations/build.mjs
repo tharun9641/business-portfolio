@@ -47,8 +47,8 @@ const PHOTOS = [
   { slug: 'tower-of-london', relight: true, focus: [0.45, 0.55] },
   { slug: 'the-shard', strength: 0.3, focus: [0.4, 0.5] },
   { slug: 'st-pauls', strength: 0.3, focus: [0.5, 0.45] },
-  { slug: 'tate-modern', relight: true, focus: [0.5, 0.55] },
   { slug: 'covent-garden', relight: true, focus: [0.5, 0.5] },
+  { slug: 'westminster-abbey', relight: true, focus: [0.5, 0.5] },
   { slug: 'trafalgar-square', strength: 0.3, focus: [0.45, 0.55] },
   { slug: 'buckingham-palace', relight: true, focus: [0.55, 0.5] },
 ]

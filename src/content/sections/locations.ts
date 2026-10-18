@@ -72,19 +72,6 @@ export const locationsContent: LocationsContent = {
       },
     },
     {
-      name: 'Tate Modern',
-      area: 'Bankside, SE1',
-      latLon: [51.5076, -0.0994],
-      body: 'A power station turned gallery: the best argument we know for keeping a building and changing what it does.',
-      mapsQuery: 'Tate Modern, London',
-      image: {
-        src: '/assets/locations/tate-modern.avif',
-        alt: 'Tate Modern’s brick chimney across the Thames from the Millennium Bridge at dusk.',
-        width: 1200,
-        height: 900,
-      },
-    },
-    {
       name: 'Covent Garden',
       area: 'Covent Garden, WC2',
       latLon: [51.5117, -0.124],
@@ -106,6 +93,19 @@ export const locationsContent: LocationsContent = {
       image: {
         src: '/assets/locations/westminster.avif',
         alt: 'The Elizabeth Tower and the Palace of Westminster lit at blue hour.',
+        width: 1200,
+        height: 900,
+      },
+    },
+    {
+      name: 'Westminster Abbey',
+      area: 'Broad Sanctuary, SW1',
+      latLon: [51.4993, -0.1273],
+      body: 'Seven centuries of builders added to it without erasing each other. That is how we approach every extension.',
+      mapsQuery: 'Westminster Abbey, London',
+      image: {
+        src: '/assets/locations/westminster-abbey.avif',
+        alt: 'The north front of Westminster Abbey, its rose window and pinnacles floodlit under a blue-hour sky.',
         width: 1200,
         height: 900,
       },

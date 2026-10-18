@@ -297,9 +297,9 @@ test('Locations: list selects a landmark, card and map follow', async ({ page })
   await expect(page.locator('#locations [data-loc-pin]')).toHaveCount(8)
   const card = page.locator('#locations [aria-live="polite"]')
   await expect(card.getByRole('heading', { level: 3 })).toHaveText('Tower of London')
-  await page.getByRole('button', { name: 'Westminster' }).click()
+  await page.getByRole('button', { name: 'Westminster', exact: true }).click()
   await expect(card.getByRole('heading', { level: 3 })).toHaveText('Westminster')
-  await expect(page.getByRole('button', { name: 'Westminster' })).toHaveAttribute(
+  await expect(page.getByRole('button', { name: 'Westminster', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   )
