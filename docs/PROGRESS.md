@@ -30,7 +30,7 @@ Read this first when resuming. Update it at the end of every working session.
 ## Phase 6 Ship (done)
 
 - README written. Vercel project `london-portfolio` created with `vercel.json` (framework) and `.vercelignore`.
-- Preview deploys verify correctly. **Production** (`london-portfolio.vercel.app`) still points at the first, broken build until the PM decides whether to promote a preview.
+- Preview deploys verify correctly. **Production** (`london-portfolio.vercel.app`) still points at the first, broken build. **PM decision (2026-10-18): stay preview-only for now.** To go live later, run `npx vercel promote <preview-url>` or `npx vercel --prod`.
 
 ## Phase 5 (done)
 
