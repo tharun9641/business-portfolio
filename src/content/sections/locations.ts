@@ -33,19 +33,6 @@ export const locationsContent: LocationsContent = {
   riverLabel: 'River Thames',
   locations: [
     {
-      name: 'Tower Bridge',
-      area: 'Shad Thames, SE1',
-      latLon: [51.5055, -0.0754],
-      body: 'Our studio’s doorstep. The warehouse lofts of Shad Thames taught us how much a single river view can carry a room.',
-      mapsQuery: 'Tower Bridge, London',
-      image: {
-        src: '/assets/locations/tower-bridge.avif',
-        alt: 'Tower Bridge at blue hour, its towers floodlit in gold above the Thames.',
-        width: 1200,
-        height: 900,
-      },
-    },
-    {
       name: 'Tower of London',
       area: 'Tower Hill, EC3',
       latLon: [51.5081, -0.0759],
@@ -53,7 +40,7 @@ export const locationsContent: LocationsContent = {
       mapsQuery: 'Tower of London',
       image: {
         src: '/assets/locations/tower-of-london.avif',
-        alt: 'Placeholder: the White Tower of the Tower of London at dusk.',
+        alt: 'The White Tower and curtain walls of the Tower of London across the Thames at blue hour.',
         width: 1200,
         height: 900,
       },
@@ -66,7 +53,7 @@ export const locationsContent: LocationsContent = {
       mapsQuery: 'The Shard, London',
       image: {
         src: '/assets/locations/the-shard.avif',
-        alt: 'Placeholder: the Shard catching the last light over London Bridge.',
+        alt: 'The Shard lit at night above London Bridge and the Thames.',
         width: 1200,
         height: 900,
       },
@@ -79,20 +66,33 @@ export const locationsContent: LocationsContent = {
       mapsQuery: 'St Paul’s Cathedral, London',
       image: {
         src: '/assets/locations/st-pauls.avif',
-        alt: 'Placeholder: the dome of St Paul’s Cathedral at blue hour.',
+        alt: 'St Paul’s Cathedral floodlit at night, seen along the Millennium Bridge.',
         width: 1200,
         height: 900,
       },
     },
     {
-      name: 'London Eye',
-      area: 'South Bank, SE1',
-      latLon: [51.5033, -0.1196],
-      body: 'One slow revolution, thirty minutes, the whole city. The pace we like to work at.',
-      mapsQuery: 'London Eye',
+      name: 'Tate Modern',
+      area: 'Bankside, SE1',
+      latLon: [51.5076, -0.0994],
+      body: 'A power station turned gallery: the best argument we know for keeping a building and changing what it does.',
+      mapsQuery: 'Tate Modern, London',
       image: {
-        src: '/assets/locations/london-eye.avif',
-        alt: 'Placeholder: the London Eye lit against the evening sky.',
+        src: '/assets/locations/tate-modern.avif',
+        alt: 'Tate Modern’s brick chimney across the Thames from the Millennium Bridge at dusk.',
+        width: 1200,
+        height: 900,
+      },
+    },
+    {
+      name: 'Covent Garden',
+      area: 'Covent Garden, WC2',
+      latLon: [51.5117, -0.124],
+      body: 'Glass, iron and lamplight over a market hall. Our favourite lesson in making a big room feel warm.',
+      mapsQuery: 'Covent Garden Market, London',
+      image: {
+        src: '/assets/locations/covent-garden.avif',
+        alt: 'The glass-roofed arcade of Covent Garden market under hanging lanterns.',
         width: 1200,
         height: 900,
       },
@@ -118,7 +118,7 @@ export const locationsContent: LocationsContent = {
       mapsQuery: 'Trafalgar Square, London',
       image: {
         src: '/assets/locations/trafalgar-square.avif',
-        alt: 'Placeholder: Nelson’s Column above Trafalgar Square at dusk.',
+        alt: 'A Trafalgar Square fountain lit red at night in front of grand stone buildings.',
         width: 1200,
         height: 900,
       },
@@ -131,7 +131,7 @@ export const locationsContent: LocationsContent = {
       mapsQuery: 'Buckingham Palace, London',
       image: {
         src: '/assets/locations/buckingham-palace.avif',
-        alt: 'Placeholder: Buckingham Palace at the end of the Mall at dusk.',
+        alt: 'Buckingham Palace and its flower beds under a deep evening sky.',
         width: 1200,
         height: 900,
       },

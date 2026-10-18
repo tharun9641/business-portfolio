@@ -31,12 +31,20 @@ await sharp('public/assets/hero/still.avif')
   .composite([{ input: Buffer.from(overlay) }])
   .jpeg({ quality: 82, mozjpeg: true })
   .toFile('src/app/opengraph-image.jpg')
-await writeFile('src/app/opengraph-image.alt.txt', `${NAME}: Tower Bridge at blue hour, floodlit in gold.`)
+await writeFile(
+  'src/app/opengraph-image.alt.txt',
+  `${NAME}: Tower Bridge at blue hour, floodlit in gold.`,
+)
 
-const icon = (size, radius) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64">
+const icon = (
+  size,
+  radius,
+) => `<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 64 64">
   <rect width="64" height="64" rx="${radius}" fill="#0b1220"/>
   <text x="32" y="41" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="25" fill="#e8b65a">${MONOGRAM}</text>
 </svg>`
 await writeFile('src/app/icon.svg', icon(64, 12))
-await sharp(Buffer.from(icon(180, 0))).png().toFile('src/app/apple-icon.png')
+await sharp(Buffer.from(icon(180, 0)))
+  .png()
+  .toFile('src/app/apple-icon.png')
 console.log('brand images written')

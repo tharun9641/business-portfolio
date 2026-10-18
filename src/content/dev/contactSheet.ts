@@ -58,12 +58,6 @@ export const contactSheet = {
   },
   gridHeading: 'All assets',
   placeholders: [
-    '/assets/locations/tower-of-london.avif',
-    '/assets/locations/the-shard.avif',
-    '/assets/locations/st-pauls.avif',
-    '/assets/locations/london-eye.avif',
-    '/assets/locations/trafalgar-square.avif',
-    '/assets/locations/buckingham-palace.avif',
     '/assets/eye/sub-05.avif',
     '/assets/eye/foreground.webp',
     '/assets/shared/template/sky.avif',

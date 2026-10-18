@@ -155,10 +155,15 @@ All hero layers share one 4240×2832 canvas, so they register exactly. Alpha lay
 
 ### Locations (Phase 7)
 
-All images are 1200×900 (4:3) AVIF in `public/assets/locations/`, shown on the location card with a masked reveal.
+All images are 1200×900 (4:3) AVIF in `public/assets/locations/`, graded to blue hour by `node scripts/locations/build.mjs`. Sources are in `incoming-assets/locations/` (Pexels, 2400px, Pexels licence; downloaded 2026-10-18 with PM approval).
 
-| File                                                                                                                            | Status                                                                                                    |
-| ------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| `tower-bridge.avif`                                                                                                             | ready (crop of the hero composite)                                                                        |
-| `westminster.avif`                                                                                                              | ready (crop of the Eye master)                                                                            |
-| `tower-of-london.avif`, `the-shard.avif`, `st-pauls.avif`, `london-eye.avif`, `trafalgar-square.avif`, `buckingham-palace.avif` | **placeholder** (blue-hour gradient). Needs real images; replace them as drop-ins with the same filenames |
+| File                     | Source photo (Pexels)                                                             | Grade                                                |
+| ------------------------ | --------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `tower-of-london.avif`   | #32261043 "Tower of London along the Thames River" (Indu Bikash Sarker)           | relit: depth-masked sky to blue hour, stone floodlit |
+| `the-shard.avif`         | #38340110 "The Shard and Illuminated London Bridge at Night" (Paul Bisseker)      | light unifying grade                                 |
+| `st-pauls.avif`          | #10912910 "St. Paul's Cathedral during Nighttime" (Ian Probets)                   | light                                                |
+| `tate-modern.avif`       | #39019122 "Millennium Bridge with Tate Modern and River Thames" (Brett Jordan)    | relit                                                |
+| `covent-garden.avif`     | #8187087 "Hallway Inside a Shopping Center" (Samuel Sweet)                        | relit (interior, lamplit)                            |
+| `trafalgar-square.avif`  | #16162422 "A Trafalgar Square in London" (Wender Junior Souza Vieira)             | light                                                |
+| `buckingham-palace.avif` | #33321682 "Buckingham Palace and Victoria Memorial in London" (Stephan Leuzinger) | relit                                                |
+| `westminster.avif`       | Crop of the Eye master (generated)                                                | —                                                    |
