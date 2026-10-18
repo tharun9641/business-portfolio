@@ -12,10 +12,33 @@ type Props = WheelProps & { running: boolean }
 const LAMP = new THREE.Color('#e8b65a')
 const LAMP_DIM = new THREE.Color('#8a6a3a')
 
+/** Rim truss, in radius units: two outer chords (front/back) and one inner chord, braced. */
+const RIM = { outer: 1, inner: 0.962, depth: 0.032, bays: 96 } as const
+/** Spindle half-length: the spoke cables fan from its ends to the inner chord. */
+const SPINDLE = 0.13
+/** A slight turn off face-on so the truss, pods and legs read in depth (boarding point moves <1%). */
+const TILT = -0.14
+
+const Y_AXIS = new THREE.Vector3(0, 1, 0)
+/** Matrix for a unit cylinder stretched from p to q with the given radius. */
+function beam(p: THREE.Vector3, q: THREE.Vector3, r: number): THREE.Matrix4 {
+  const d = q.clone().sub(p)
+  const quat = new THREE.Quaternion().setFromUnitVectors(Y_AXIS, d.clone().normalize())
+  return new THREE.Matrix4().compose(
+    p.clone().add(q).multiplyScalar(0.5),
+    quat,
+    new THREE.Vector3(r, d.length(), r),
+  )
+}
+const onRing = (a: number, r: number, z: number) =>
+  new THREE.Vector3(Math.cos(a) * r, Math.sin(a) * r, z)
+
 /**
- * Procedural London Eye in React Three Fiber: twin rim tubes with radial struts, 64 spoke cables,
- * hub and spindle, a raking A-frame, and 32 egg-shaped glass capsules mounted outside the rim that
- * stay level as the wheel turns. Geometry is in "radius units" and scaled to the pixel layout.
+ * Procedural London Eye in React Three Fiber, modelled on the real one: a braced triangular rim
+ * truss lined with a faint LED strip, 64 spoke cables fanning from the spindle ends, a raking
+ * A-frame, and 32 glass ovoid capsules, each held in a steel mounting ring outside the rim, lit
+ * from inside and kept level as the wheel turns. White steel catches cool sky light from above
+ * and warm city light from below. Geometry is in "radius units" and scaled to the pixel layout.
  */
 export default function Wheel3D(props: Props) {
   return (
@@ -51,8 +74,11 @@ export default function Wheel3D(props: Props) {
           position={[10, 2, 8]}
         />
       </Environment>
-      <ambientLight intensity={0.35} color="#3e5c7a" />
-      <directionalLight position={[-6, 2, 5]} intensity={1.2} color="#e8b65a" />
+      <ambientLight intensity={0.25} color="#3e5c7a" />
+      {/* Cool key from the sky, warm fill from the floodlit embankment below. */}
+      <directionalLight position={[6, 7, 5]} intensity={1.1} color="#a9c2e0" />
+      <directionalLight position={[-6, -3, 4]} intensity={0.55} color="#e8b65a" />
+      <hemisphereLight args={['#1c3550', '#6e5134', 0.45]} />
       <Eye {...props} />
     </Canvas>
   )
@@ -82,22 +108,34 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
     () =>
       new THREE.MeshStandardMaterial({
         // Painted white steel catching the dusk: low metalness so it reads light against the sky.
-        color: '#e2e8ee',
-        metalness: 0.35,
-        roughness: 0.4,
-        envMapIntensity: 1.6,
+        color: '#dfe5ea',
+        metalness: 0.45,
+        roughness: 0.38,
+        envMapIntensity: 1.2,
       }),
     [],
   )
   const glass = useMemo(
     () =>
       new THREE.MeshPhysicalMaterial({
-        color: '#9fb6cc',
+        color: '#b9cde0',
         metalness: 0.05,
-        roughness: 0.06,
+        roughness: 0.05,
         clearcoat: 1,
         transparent: true,
-        opacity: 0.42,
+        opacity: 0.4,
+        depthWrite: false,
+        envMapIntensity: 1.8,
+      }),
+    [],
+  )
+  // Capsule mounting rings and end frames: darker, more metallic than the painted rim.
+  const frame = useMemo(
+    () =>
+      new THREE.MeshStandardMaterial({
+        color: '#c4ccd5',
+        metalness: 0.6,
+        roughness: 0.3,
         envMapIntensity: 1.4,
       }),
     [],
@@ -105,8 +143,8 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
   const glassActive = useMemo(() => {
     const m = glass.clone()
     m.emissive = new THREE.Color('#e8b65a')
-    m.emissiveIntensity = 0.55
-    m.opacity = 0.6
+    m.emissiveIntensity = 0.5
+    m.opacity = 0.55
     return m
   }, [glass])
   // Warm halo fixed at the boarding point: the active capsule always arrives there.
@@ -131,33 +169,57 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
     const n = 64
     for (let i = 0; i < n; i++) {
       const a = (i / n) * Math.PI * 2
-      const side = i % 2 ? 0.06 : -0.06
-      pts.push(0, 0, side * 1.6, Math.cos(a), Math.sin(a), side * 0.5)
+      const z = i % 2 ? SPINDLE : -SPINDLE
+      pts.push(0, 0, z, ...onRing(a, RIM.inner, 0).toArray())
     }
     const g = new THREE.BufferGeometry()
     g.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
     return g
   }, [])
-  const struts = useMemo(() => {
-    const m = new THREE.Matrix4()
+  // Every straight steel member of the rim, as one instanced mesh: per bay, the two sides of the
+  // triangular section, its front-back tie, an alternating diagonal, and two brackets per capsule.
+  const beams = useMemo(() => {
     const list: THREE.Matrix4[] = []
-    for (let i = 0; i < capsules * 2; i++) {
-      const a = (i / (capsules * 2)) * Math.PI * 2
-      m.makeRotationZ(a).setPosition(Math.cos(a) * 0.985, Math.sin(a) * 0.985, 0)
-      list.push(m.clone())
+    const B = RIM.bays
+    for (let i = 0; i < B; i++) {
+      const a = (i / B) * Math.PI * 2
+      const b = ((i + 1) / B) * Math.PI * 2
+      const inner = onRing(a, RIM.inner, 0)
+      const front = onRing(a, RIM.outer, RIM.depth)
+      const back = onRing(a, RIM.outer, -RIM.depth)
+      list.push(beam(inner, front, 0.0032), beam(inner, back, 0.0032), beam(front, back, 0.0026))
+      list.push(beam(inner, onRing(b, RIM.outer, i % 2 ? RIM.depth : -RIM.depth), 0.0024))
+    }
+    const podR = 1 + CAPSULE.offset
+    const ringR = CAPSULE.halfLength * 1.05
+    for (let c = 0; c < capsules; c++) {
+      const a = capsuleAngle(c, capsules)
+      const ringFoot = onRing(a, podR - ringR, 0)
+      list.push(
+        beam(onRing(a, RIM.outer, RIM.depth), ringFoot, 0.0034),
+        beam(onRing(a, RIM.outer, -RIM.depth), ringFoot, 0.0034),
+      )
     }
     return list
   }, [capsules])
 
-  // One geometry each for every shell and core: 2 GPU uploads instead of 64.
+  // One shell geometry shared by every capsule: 1 GPU upload instead of 32.
   const shellGeometry = useMemo(() => new THREE.SphereGeometry(1, 24, 16), [])
-  const coreGeometry = useMemo(() => new THREE.SphereGeometry(1, 12, 8), [])
 
-  const strutMesh = useRef<THREE.InstancedMesh>(null)
+  const beamMesh = useRef<THREE.InstancedMesh>(null)
+  const ringMesh = useRef<THREE.InstancedMesh>(null)
   useLayoutEffect(() => {
-    struts.forEach((m, i) => strutMesh.current?.setMatrixAt(i, m))
-    if (strutMesh.current) strutMesh.current.instanceMatrix.needsUpdate = true
-  }, [struts])
+    beams.forEach((m, i) => beamMesh.current?.setMatrixAt(i, m))
+    if (beamMesh.current) beamMesh.current.instanceMatrix.needsUpdate = true
+    // Mounting rings: circles in the wheel plane around each capsule, fixed to the rim.
+    const podR = 1 + CAPSULE.offset
+    const m = new THREE.Matrix4()
+    for (let c = 0; c < capsules; c++) {
+      const a = capsuleAngle(c, capsules)
+      ringMesh.current?.setMatrixAt(c, m.makeTranslation(Math.cos(a) * podR, Math.sin(a) * podR, 0))
+    }
+    if (ringMesh.current) ringMesh.current.instanceMatrix.needsUpdate = true
+  }, [beams, capsules])
 
   useFrame(({ clock }, dt) => {
     const rot = rotation.current
@@ -180,7 +242,7 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
         const twinkle = 0.75 + 0.25 * Math.sin(t * 1.3 + c * 2.17) * Math.sin(t * 0.7 + c)
         const col = isActive ? LAMP : LAMP_DIM
         const mat = core.material as THREE.MeshBasicMaterial
-        mat.color.copy(col).multiplyScalar(isActive ? 1.8 : 0.32 * twinkle + 0.12)
+        mat.color.copy(col).multiplyScalar(isActive ? 1.6 : 0.7 * twinkle + 0.45)
       }
     }
     if (halo.current) halo.current.opacity = 0.8 + 0.12 * Math.sin(t * 1.7)
@@ -193,7 +255,7 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
   const podR = 1 + CAPSULE.offset
 
   return (
-    <group position={hub} scale={scale}>
+    <group position={hub} scale={scale} rotation={[0, TILT, 0]}>
       {/* A-frame legs raking back from the hub (static). */}
       {[-0.34, 0.34].map((dx) => {
         const end = new THREE.Vector3(dx * 1.1, -1.38, -0.55)
@@ -204,12 +266,13 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
         )
         return (
           <mesh key={dx} material={steel} position={end.clone().multiplyScalar(0.5)} quaternion={q}>
-            <cylinderGeometry args={[0.012, 0.018, len, 12]} />
+            <cylinderGeometry args={[0.014, 0.026, len, 16]} />
           </mesh>
         )
       })}
+      {/* Spindle: the static axle the hub turns on. */}
       <mesh material={steel} rotation={[Math.PI / 2, 0, 0]}>
-        <cylinderGeometry args={[0.035, 0.035, 0.34, 20]} />
+        <cylinderGeometry args={[0.022, 0.022, SPINDLE * 2.4, 20]} />
       </mesh>
 
       <mesh position={[Math.cos(boarding) * podR, Math.sin(boarding) * podR, 0.06]} renderOrder={2}>
@@ -225,19 +288,38 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
       </mesh>
 
       <group ref={wheel} rotation={[0, 0, initialRotation]}>
-        {[-0.03, 0.03].map((z) => (
-          <mesh key={z} material={steel} position={[0, 0, z]}>
-            <torusGeometry args={[1, 0.009, 8, 160]} />
+        {/* Rim chords: front and back outer tubes, one inner tube. */}
+        {[
+          [RIM.outer, RIM.depth],
+          [RIM.outer, -RIM.depth],
+          [RIM.inner, 0],
+        ].map(([r, z]) => (
+          <mesh key={`${r}:${z}`} material={steel} position={[0, 0, z]}>
+            <torusGeometry args={[r, 0.0075, 8, 192]} />
           </mesh>
         ))}
-        <instancedMesh ref={strutMesh} args={[undefined, steel, struts.length]}>
-          <boxGeometry args={[0.03, 0.006, 0.062]} />
-        </instancedMesh>
-        <mesh material={steel}>
-          <cylinderGeometry args={[0.055, 0.055, 0.16, 24]} />
+        {/* The rim's LED strip: a faint cool line along the outer front chord. */}
+        <mesh position={[0, 0, RIM.depth + 0.006]}>
+          <torusGeometry args={[RIM.outer, 0.0028, 6, 192]} />
+          <meshBasicMaterial color="#cfdcff" transparent opacity={0.4} toneMapped={false} />
         </mesh>
+        <instancedMesh ref={beamMesh} args={[undefined, steel, beams.length]}>
+          <cylinderGeometry args={[1, 1, 1, 6]} />
+        </instancedMesh>
+        <instancedMesh ref={ringMesh} args={[undefined, frame, capsules]}>
+          <torusGeometry args={[CAPSULE.halfLength * 1.05, 0.0022, 6, 48]} />
+        </instancedMesh>
+        {/* Hub: turning drum with a flange at each spindle end where the cables meet. */}
+        <mesh material={steel} rotation={[Math.PI / 2, 0, 0]}>
+          <cylinderGeometry args={[0.04, 0.04, SPINDLE * 1.6, 24]} />
+        </mesh>
+        {[-SPINDLE, SPINDLE].map((z) => (
+          <mesh key={z} material={steel} position={[0, 0, z]} rotation={[Math.PI / 2, 0, 0]}>
+            <cylinderGeometry args={[0.058, 0.058, 0.01, 32]} />
+          </mesh>
+        ))}
         <lineSegments geometry={cables}>
-          <lineBasicMaterial color="#c9d2dc" transparent opacity={0.45} />
+          <lineBasicMaterial color="#b7c3d0" transparent opacity={0.3} />
         </lineSegments>
 
         {Array.from({ length: capsules }, (_, c) => {
@@ -260,16 +342,31 @@ function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect,
                   geometry={shellGeometry}
                   scale={[CAPSULE.halfLength, CAPSULE.halfHeight, CAPSULE.halfHeight]}
                 />
-                <mesh
-                  ref={(el) => void (cores.current[c] = el)}
-                  geometry={coreGeometry}
-                  scale={[
-                    CAPSULE.halfLength * 0.6,
-                    CAPSULE.halfHeight * 0.5,
-                    CAPSULE.halfHeight * 0.5,
-                  ]}
-                >
-                  <meshBasicMaterial color={LAMP_DIM} toneMapped={false} />
+                {/* End frames where the glass meets the steel nose and tail. */}
+                {[-1, 1].map((side) => (
+                  <mesh
+                    key={side}
+                    material={frame}
+                    position={[side * CAPSULE.halfLength * 0.62, 0, 0]}
+                    rotation={[0, Math.PI / 2, 0]}
+                  >
+                    <torusGeometry args={[CAPSULE.halfHeight * 0.8, 0.0028, 6, 24]} />
+                  </mesh>
+                ))}
+                {/* Lit floor and the warm glow of the cabin interior seen through the glass. */}
+                <mesh material={frame} position={[0, -CAPSULE.halfHeight * 0.5, 0]}>
+                  <boxGeometry args={[CAPSULE.halfLength * 1.5, 0.004, CAPSULE.halfHeight * 1.3]} />
+                </mesh>
+                <mesh ref={(el) => void (cores.current[c] = el)} position={[0, 0, 0.002]}>
+                  <planeGeometry args={[CAPSULE.halfLength * 2.2, CAPSULE.halfHeight * 2.2]} />
+                  <meshBasicMaterial
+                    map={haloTexture}
+                    color={LAMP_DIM}
+                    transparent
+                    depthWrite={false}
+                    blending={THREE.AdditiveBlending}
+                    toneMapped={false}
+                  />
                 </mesh>
               </group>
             </group>
