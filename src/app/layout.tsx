@@ -9,8 +9,7 @@ import './globals.css'
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  style: ['normal', 'italic'],
+  weight: ['400', '500'],
   display: 'swap',
 })
 
@@ -24,13 +23,16 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: { default: `${site.name} | ${site.tagline}`, template: `%s | ${site.name}` },
   description: site.description,
+  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: site.locale,
+    url: '/',
     siteName: site.name,
     title: site.name,
     description: site.description,
   },
+  twitter: { card: 'summary_large_image', title: site.name, description: site.description },
 }
 
 export const viewport: Viewport = {

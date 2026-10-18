@@ -1,0 +1,51 @@
+{
+  "gpu": "Apple M5 (Metal)",
+  "viewport": "1440x900",
+  "method": "160 wheel steps of 80px every 50ms over the full page, rAF frame deltas + PerformanceObserver longtask",
+  "runs": [
+    {
+      "frames": 1029,
+      "avgFps": 58.2,
+      "p95ms": 16.7,
+      "worstMs": 333.3,
+      "longTasks": [
+        {
+          "d": 116,
+          "y": 1604
+        },
+        {
+          "d": 82,
+          "y": 1956
+        },
+        {
+          "d": 308,
+          "y": 1956
+        }
+      ]
+    },
+    {
+      "frames": 1207,
+      "avgFps": 59.5,
+      "p95ms": 16.7,
+      "worstMs": 100,
+      "longTasks": [
+        {
+          "d": 94,
+          "y": 1469
+        }
+      ]
+    },
+    {
+      "frames": 1079,
+      "avgFps": 59.3,
+      "p95ms": 16.7,
+      "worstMs": 100.1,
+      "longTasks": [
+        {
+          "d": 105,
+          "y": 1538
+        }
+      ]
+    }
+  ]
+}

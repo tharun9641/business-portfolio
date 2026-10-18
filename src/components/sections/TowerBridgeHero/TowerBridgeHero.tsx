@@ -23,13 +23,15 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
     const [px, py] = bascules[layer.bascule].pivot
     return `${(px / canvas.w) * 100}% ${(py / canvas.h) * 100}%`
   }
-  const layerImage = (layer: HeroLayer) => (
+  const layerImage = (layer: HeroLayer, reflection = false) => (
     <Image
       src={layer.src}
       alt=""
       fill
-      preload
-      sizes="(orientation: portrait) 250vw, 150vw"
+      quality={60}
+      preload={!reflection && layer.preload}
+      loading={reflection ? 'lazy' : 'eager'}
+      sizes="(orientation: portrait) 160vw, 150vw"
       className="object-cover"
     />
   )
@@ -111,7 +113,7 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
                     className="absolute inset-0"
                     style={{ transformOrigin: origin(layer) }}
                   >
-                    {layerImage(layer)}
+                    {layerImage(layer, true)}
                   </div>
                 ))}
             </div>
@@ -157,13 +159,14 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
         </div>
       </div>
 
+      <div aria-hidden className="hero-curtain" />
+
       {/* Reduced motion: the composed still instead of the live stage. */}
       <div data-hero-still className="hero-still">
         <Image
           src="/assets/hero/still.avif"
           alt={content.stillAlt}
           fill
-          preload
           sizes="100vw"
           className="object-cover"
         />
@@ -173,7 +176,7 @@ export function TowerBridgeHero({ id, content }: SectionProps<HeroContent>) {
 
       <div
         data-hero-copy
-        className="absolute inset-x-0 top-[11svh] z-(--z-content) px-(--page-margin) text-center"
+        className="absolute inset-x-0 top-[11svh] z-(--z-content) px-(--page-margin) text-center md:top-[8svh]"
       >
         <SplitHeading
           as="h1"

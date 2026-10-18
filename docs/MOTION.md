@@ -20,7 +20,8 @@ The constants live in `src/lib/motion.ts`. The CSS mirrors are in `src/styles/to
 
 - **Lenis**: one instance in `SmoothScrollProvider`, driven by `gsap.ticker`. `lenis.on('scroll', ScrollTrigger.update)`, `gsap.ticker.lagSmoothing(0)`, `autoRaf: false`. Anchor links scroll through Lenis.
 - **GSAP**: plugins are registered once in `src/lib/gsap.ts`. Every animated component uses `useGSAP` with a scope and wraps its timelines in `gsap.matchMedia('(prefers-reduced-motion: no-preference)')`. Under reduced motion nothing is created, and switching the OS setting reverts animations live.
-- **Motion** (the library): UI micro-interactions only (Button, Nav menu), under `MotionConfig reducedMotion="user"`.
+- **Motion** (the library): only in the full-screen menu panel (`MenuPanel`, loaded on demand, `MotionConfig reducedMotion="user"`). The CTA's lift and press and the menu icon are CSS transitions, so no animation library runs on the first load.
+- **Hero arrival:** a CSS `--ink` curtain lifts off a fully painted scene, so LCP never waits for JavaScript.
 
 ## Primitives
 

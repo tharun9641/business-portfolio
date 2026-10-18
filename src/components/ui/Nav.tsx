@@ -1,20 +1,22 @@
 'use client'
 
-import { AnimatePresence, motion } from 'motion/react'
+import dynamic from 'next/dynamic'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { useSmoothScroll } from '@/components/motion/SmoothScrollProvider'
 import { site } from '@/content/site'
-import { DURATION } from '@/lib/motion'
 import { Button } from './Button'
 import { Logo } from './Logo'
 
 export type NavItem = { id: string; label: string }
 
-const ease = [0.215, 0.61, 0.355, 1] as const
+const loadPanel = () => import('./MenuPanel')
+const MenuPanel = dynamic(loadPanel, { ssr: false })
 
 /** Fixed nav: logo, the always-visible CTA, and a full-screen menu built from the section registry. */
 export function Nav({ items }: { items: NavItem[] }) {
   const [open, setOpen] = useState(false)
+  // The panel (and Motion) loads on first open; hovering or focusing the toggle prefetches it.
+  const [panelWanted, setPanelWanted] = useState(false)
   const { lenis, scrollTo } = useSmoothScroll()
   const menuId = useId()
   const toggleRef = useRef<HTMLButtonElement>(null)
@@ -40,7 +42,6 @@ export function Nav({ items }: { items: NavItem[] }) {
   // Escape closes; Tab stays inside the open menu.
   useEffect(() => {
     if (!open) return
-    panelRef.current?.querySelector<HTMLElement>('a, button')?.focus()
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') return close()
       if (e.key !== 'Tab' || !panelRef.current) return
@@ -85,65 +86,37 @@ export function Nav({ items }: { items: NavItem[] }) {
             type="button"
             aria-expanded={open}
             aria-controls={menuId}
-            onClick={() => (open ? close() : setOpen(true))}
+            onClick={() => {
+              setPanelWanted(true)
+              if (open) close()
+              else setOpen(true)
+            }}
+            onPointerEnter={() => void loadPanel()}
+            onFocus={() => void loadPanel()}
+            data-open={open || undefined}
             className="relative z-(--z-menu) inline-flex min-h-11 min-w-11 items-center justify-center gap-2 rounded-full border border-hairline px-4 text-step--1 text-stone transition-colors duration-(--dur-micro) hover:border-stone/60"
           >
             <span className="max-sm:sr-only">
               {open ? site.nav.closeLabel : site.nav.menuLabel}
             </span>
-            <span aria-hidden className="relative block h-2.5 w-4">
-              <motion.span
-                className="absolute inset-x-0 top-0 h-px bg-current"
-                animate={open ? { y: 5, rotate: 45 } : { y: 0, rotate: 0 }}
-                transition={{ duration: DURATION.micro / 2, ease }}
-              />
-              <motion.span
-                className="absolute inset-x-0 bottom-0 h-px bg-current"
-                animate={open ? { y: -4, rotate: -45 } : { y: 0, rotate: 0 }}
-                transition={{ duration: DURATION.micro / 2, ease }}
-              />
+            <span aria-hidden className="menu-icon relative block h-2.5 w-4">
+              <span className="absolute inset-x-0 top-0 h-px bg-current" />
+              <span className="absolute inset-x-0 bottom-0 h-px bg-current" />
             </span>
           </button>
         </div>
       </div>
 
-      <AnimatePresence>
-        {open ? (
-          <motion.div
-            ref={panelRef}
-            id={menuId}
-            role="dialog"
-            aria-modal="true"
-            aria-label={site.nav.menuLabel}
-            className="fixed inset-0 z-(--z-nav) flex flex-col justify-center bg-ink/95 px-(--page-margin) backdrop-blur-md"
-            initial={{ clipPath: 'inset(0% 0% 100% 0%)' }}
-            animate={{ clipPath: 'inset(0% 0% 0% 0%)' }}
-            exit={{ clipPath: 'inset(0% 0% 100% 0%)' }}
-            transition={{ duration: DURATION.micro, ease }}
-          >
-            <nav aria-label={site.nav.menuLabel} className="mx-auto w-full max-w-(--content-max)">
-              <ul className="flex flex-col gap-2">
-                {items.map((item, i) => (
-                  <motion.li
-                    key={item.id}
-                    initial={{ opacity: 0, y: 24 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: DURATION.micro, ease, delay: 0.15 + i * 0.05 }}
-                  >
-                    <a
-                      href={`#${item.id}`}
-                      onClick={(e) => go(e, item.id)}
-                      className="font-display text-step-5 leading-tight text-stone transition-colors duration-(--dur-micro) hover:text-lamp"
-                    >
-                      {item.label}
-                    </a>
-                  </motion.li>
-                ))}
-              </ul>
-            </nav>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
+      {panelWanted ? (
+        <MenuPanel
+          open={open}
+          id={menuId}
+          label={site.nav.menuLabel}
+          items={items}
+          panelRef={panelRef}
+          onGo={go}
+        />
+      ) : null}
     </header>
   )
 }

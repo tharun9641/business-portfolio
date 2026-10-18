@@ -1,0 +1,7 @@
+#top h1: 9.33 (needs 3)
+#top [data-hero-copy] p: 8.68 (needs 4.5)
+#process h2: 7.19 (needs 3)
+#process [data-eye-panel][data-active] [data-eye-body]: 5.50 (needs 4.5)
+#process [data-eye-panel][data-active] h3: 6.08 (needs 3)
+#contact h2: 10.25 (needs 3)
+#contact h2 + div p: 11.30 (needs 4.5)

@@ -53,18 +53,18 @@ for (const vp of VIEWPORTS) {
 
 test('layers separate by depth while scrolling', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 })
-  await page.goto('/')
+  await page.goto('/dev/template')
   await expect(page.locator('html')).toHaveClass(/lenis/)
 
   // Bring the second scene to mid-viewport, then compare depths.
   await page.evaluate(() =>
-    document.getElementById('approach')?.scrollIntoView({ block: 'center' }),
+    document.getElementById('studio')?.scrollIntoView({ block: 'center' }),
   )
   await settle(page, 2000)
-  const before = await layerOffsets(page, 'approach')
+  const before = await layerOffsets(page, 'studio')
   await page.mouse.wheel(0, 400)
   await settle(page, 2000)
-  const after = await layerOffsets(page, 'approach')
+  const after = await layerOffsets(page, 'studio')
 
   const travel = after.map((l, i) => ({ depth: l.depth, dy: Math.abs(l.y - before[i].y) }))
   expect(travel).toHaveLength(4)

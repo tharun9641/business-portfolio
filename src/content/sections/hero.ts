@@ -13,6 +13,8 @@ export type HeroLayer = {
   bascule?: 'left' | 'right'
   /** Mirrored into the river as a live reflection. */
   reflect?: boolean
+  /** Preload in <head>: only the layers that dominate the first frame. */
+  preload?: boolean
 }
 
 export type HeroContent = {
@@ -50,10 +52,17 @@ export const heroContent: HeroContent = {
   scrollCue: 'Scroll to open',
   stillAlt: 'Tower Bridge at blue hour, floodlit in gold above the Thames, seen past HMS Belfast.',
   layers: [
-    { id: 'sky', src: '/assets/hero/sky.avif', depth: 0.05, exit: { x: 0, y: 0 } },
-    { id: 'skyline', src: '/assets/hero/skyline.webp', depth: 0.15, exit: { x: 0, y: 0 } },
+    { id: 'sky', preload: true, src: '/assets/hero/sky.avif', depth: 0.05, exit: { x: 0, y: 0 } },
+    {
+      id: 'skyline',
+      preload: true,
+      src: '/assets/hero/skyline.webp',
+      depth: 0.15,
+      exit: { x: 0, y: 0 },
+    },
     {
       id: 'towers',
+      preload: true,
       src: '/assets/hero/towers.webp',
       depth: 0.35,
       exit: { x: 0, y: 0 },
@@ -77,8 +86,14 @@ export const heroContent: HeroContent = {
     },
     { id: 'water', src: '/assets/hero/water.webp', depth: 0.5, exit: { x: 0, y: 0 } },
     { id: 'belfast', src: '/assets/hero/belfast.webp', depth: 0.45, exit: { x: -14, y: 4 } },
-    { id: 'piers', src: '/assets/hero/piers.webp', depth: 0.55, exit: { x: 0, y: 12 } },
-    { id: 'embankment', src: '/assets/hero/embankment.webp', depth: 0.85, exit: { x: 22, y: 6 } },
+    { id: 'piers', src: '/assets/hero/piers.webp', depth: 0.55, exit: { x: 0, y: 8 } },
+    {
+      id: 'embankment',
+      preload: true,
+      src: '/assets/hero/embankment.webp',
+      depth: 0.85,
+      exit: { x: 14, y: 4 },
+    },
   ],
   geometry,
   openAngle: 80,

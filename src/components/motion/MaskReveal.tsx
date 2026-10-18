@@ -1,6 +1,6 @@
 'use client'
 
-import Image from 'next/image'
+import { NearImage } from '@/components/ui/NearImage'
 import { useRef } from 'react'
 import type { ImageAsset } from '@/content/types'
 import { gsap, useGSAP } from '@/lib/gsap'
@@ -69,7 +69,7 @@ export function MaskReveal({ image, sizes, className, innerTravel = 8 }: MaskRev
     >
       {/* Taller than the frame so the inner drift never shows an edge. */}
       <div ref={inner} className="absolute inset-x-0 -inset-y-[6%]">
-        <Image src={image.src} alt={image.alt} fill sizes={sizes} className="object-cover" />
+        <NearImage src={image.src} alt={image.alt} fill sizes={sizes} className="object-cover" />
       </div>
     </div>
   )

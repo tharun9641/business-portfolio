@@ -13,7 +13,9 @@
   --color-lamp: var(--lamp);
   --color-bus: var(--bus);
   --color-bus-hover: var(--bus-hover);
+  --color-on-bus: var(--on-bus);
   --color-hairline: var(--hairline);
+  --color-error: var(--error);
 
   --font-display: var(--font-cormorant), 'Times New Roman', serif;
   --font-sans: var(--font-hanken), system-ui, sans-serif;
@@ -74,6 +76,17 @@
   .link:hover {
     color: var(--lamp);
     text-decoration-color: currentColor;
+  }
+
+  /* Menu toggle: two lines that cross into an X when open. */
+  .menu-icon > span {
+    transition: transform calc(var(--dur-micro) / 2) var(--ease-entrance);
+  }
+  [data-open] .menu-icon > span:first-child {
+    transform: translateY(5px) rotate(45deg);
+  }
+  [data-open] .menu-icon > span:last-child {
+    transform: translateY(-4px) rotate(-45deg);
   }
 
   .skip-link {
@@ -152,6 +165,36 @@
 .hero-stage {
   position: absolute;
   inset: 0;
+}
+/*
+ * Arrival: an --ink curtain lifts off a fully painted scene (CSS only). The image itself is never
+ * transparent, so it counts as painted from the first frame and LCP never waits for JavaScript.
+ */
+.hero-curtain {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  background: var(--ink);
+  pointer-events: none;
+  opacity: 0;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .hero-curtain {
+    animation: hero-curtain 2.2s var(--ease-entrance) both;
+  }
+  .hero-frame {
+    animation: hero-settle 2.2s var(--ease-entrance) backwards;
+  }
+}
+@keyframes hero-curtain {
+  from {
+    opacity: 1;
+  }
+}
+@keyframes hero-settle {
+  from {
+    transform: scale(1.04);
+  }
 }
 .hero-reflection {
   position: absolute;
@@ -404,7 +447,7 @@ html[data-tier='low'] .hero-bus {
     opacity: 0;
   }
 }
-@media (max-width: 767px) {
+@media (max-width: 767px), (max-width: 1023px) and (orientation: portrait) {
   .eye-content {
     left: var(--page-margin);
     right: var(--page-margin);

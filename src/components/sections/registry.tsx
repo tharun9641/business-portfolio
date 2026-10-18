@@ -1,11 +1,10 @@
 import type { ComponentType, ReactNode } from 'react'
-import { demoContent } from '@/content/sections/demo'
+import { contactContent } from '@/content/sections/contact'
 import { heroContent } from '@/content/sections/hero'
 import { londonEyeContent } from '@/content/sections/londonEye'
-import { templateContent } from '@/content/sections/template'
 import { site } from '@/content/site'
 import type { SectionProps } from '@/content/types'
-import { TemplateSection } from './_Template/TemplateSection'
+import { ContactBand } from './ContactBand/ContactBand'
 import { TowerBridgeHero } from './TowerBridgeHero/TowerBridgeHero'
 import { LondonEyeSection } from './LondonEye/LondonEyeSection'
 import { Footer } from './Footer/Footer'
@@ -38,16 +37,10 @@ export const sections: SectionEntry[] = [
     content: londonEyeContent,
   }),
   defineSection({
-    id: 'studio',
-    navLabel: 'Studio',
-    component: TemplateSection,
-    content: templateContent,
+    id: 'contact',
+    navLabel: 'Contact',
+    component: ContactBand,
+    content: contactContent,
   }),
-  defineSection({
-    id: 'approach',
-    navLabel: 'Approach',
-    component: TemplateSection,
-    content: demoContent,
-  }),
-  defineSection({ id: 'contact', navLabel: 'Contact', component: Footer, content: site }),
+  defineSection({ id: 'footer', component: Footer, content: site }),
 ]

@@ -4,6 +4,8 @@ Read this first when resuming. Update it at the end of every working session.
 
 ## Rules for resuming
 
+- **2026-10-18: the PM granted standing approval for all remaining phase gates in this build.**
+
 - The brief's phase gates are binding: **never start a new phase without the PM's written approval in chat.** A resumed session only finishes the steps listed under "Current phase → Remaining" below.
 - Work on the current phase branch. Commit only when the remaining steps are done and checks pass.
 - End-of-phase checks: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, `PHASE=<phase> npx playwright test` (screenshots go to `docs/qa/<phase>/`).
@@ -17,21 +19,18 @@ Read this first when resuming. Update it at the end of every working session.
 | 2 Assets            | approved, committed                   | `phase-2-assets`     |
 | 3 Tower Bridge hero | **complete, waiting for PM approval** | `phase-3-hero`       |
 
-## Current phase: 4 London Eye
-
-### Done
-
-- Content (`londonEye.ts`), tested wheel maths, SVG wheel, procedural R3F wheel (rim tubes and struts, 64 cables, hub, A-frame, 32 level glass capsules, lamp-lit active capsule with halo).
-- Pinned section: snapping stops, connector, panel transitions, roving-tabindex tablist, clickable capsules, mobile arc and swipe, low tier (SVG), reduced motion (list).
-- QA: 16/16 Playwright tests (stops at 375/1440, keyboard and click, low tier, reduced motion). Evidence is in `docs/qa/phase-4/`.
+## Current phase: 6 Ship
 
 ### Remaining
 
-None. Waiting for PM approval.
+1. Write the README: editing content, swapping images, adding a section, scripts, env vars.
+2. Deploy to Vercel. This needs the PM's Vercel login; set `MAIL_PROVIDER` and the related env vars.
+3. Run the final checks against the deployed URL, then report.
 
-### Carried polish items (Phase 5)
+## Phase 5 (done)
 
-- Hero: flat dark block revealed under the embankment late in the camera push; the value proposition grazes the spires on desktop.
+- Contact band with server action, SEO (OG image, icons, robots, sitemap, LocalBusiness JSON-LD, canonical), axe 0 violations, contrast proof over imagery, Lighthouse desktop 100 / mobile 83–90, scroll trace, 15/15 cross-browser. See docs/PERFORMANCE.md.
+- Open items needing a PM call: D-45 (simulated LCP; 3D setup long task).
 
 ## Notes
 

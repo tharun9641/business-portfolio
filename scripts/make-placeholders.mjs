@@ -65,7 +65,7 @@ function fbm(noise, u, v, baseCells, octaves) {
 const mix = (a, b, t) => a + (b - a) * t
 const clamp01 = (t) => Math.min(1, Math.max(0, t))
 
-async function mist(file, seed, { width = 1920, height = 320, density = 0.55 } = {}) {
+async function mist(file, seed, { width = 1024, height = 160, density = 0.55 } = {}) {
   const noise = periodicNoise(seed)
   const buf = Buffer.alloc(width * height * 4)
   for (let y = 0; y < height; y++) {
@@ -84,8 +84,8 @@ async function mist(file, seed, { width = 1920, height = 320, density = 0.55 } =
     }
   }
   await sharp(buf, { raw: { width, height, channels: 4 } })
-    .blur(4)
-    .webp({ quality: 70, alphaQuality: 80 })
+    .blur(2)
+    .webp({ quality: 55, alphaQuality: 60, effort: 6 })
     .toFile(path.join(OUT, file))
 }
 

@@ -18,6 +18,10 @@
   --stone-60: rgb(232 226 214 / 0.64);
   --hairline: rgb(232 226 214 / 0.16);
   --bus-hover: #a81826;
+  /* Text on --bus: white gives 5.7:1 (stone is 4.4:1, under AA for small text) */
+  --on-bus: #ffffff;
+  /* Form errors: light coral, AA on --ink (CTA red is too dark for small text on night tones) */
+  --error: #ff9a8f;
   --focus-ring: var(--lamp);
 
   /* Scrim behind text that sits on imagery, for WCAG AA contrast */

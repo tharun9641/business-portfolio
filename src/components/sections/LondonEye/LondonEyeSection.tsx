@@ -1,7 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
-import Image from 'next/image'
+import { NearImage } from '@/components/ui/NearImage'
 import { useCallback, useEffect, useId, useRef, useState } from 'react'
 import { MistLayer } from '@/components/motion/MistLayer'
 import { useSmoothScroll } from '@/components/motion/SmoothScrollProvider'
@@ -21,18 +21,22 @@ import {
   rotationForProgress,
 } from './wheelMath'
 
-const Wheel3D = dynamic(() => import('./Wheel3D'), { ssr: false })
+const loadWheel3D = () => import('./Wheel3D')
+const Wheel3D = dynamic(loadWheel3D, { ssr: false })
 
 const MOBILE_MAX = 767
+const TABLET_MAX = 1023
 
 function computeLayout(
   width: number,
   height: number,
   wheel: LondonEyeContent['wheel'],
 ): WheelLayout {
-  const mobile = width <= MOBILE_MAX
+  // Phones, and tablets held upright, get the arc-on-top layout (matches the CSS media query).
+  const mobile = width <= MOBILE_MAX || (width <= TABLET_MAX && height > width)
   if (mobile) {
-    const radius = wheel.radius.mobile * width
+    // Capped by height too, so tablets in portrait keep a proportionate arc.
+    const radius = Math.min(wheel.radius.mobile * width, height * 0.55)
     // The active capsule (6 o'clock) sits at about 38% of the viewport height.
     const boardY = height * 0.38
     return {
@@ -83,6 +87,19 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     ro.observe(el)
     return () => ro.disconnect()
   }, [content.wheel])
+
+  // Fetch and parse the 3D chunk once the visitor starts scrolling (during the hero), so mounting
+  // it later only costs GPU setup and it never competes with the first load.
+  useEffect(() => {
+    if (!use3D) return
+    const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200))
+    const onScroll = () => {
+      window.removeEventListener('scroll', onScroll)
+      idle(() => void loadWheel3D())
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [use3D])
 
   // 3D only where it will run well; the SVG wheel covers everything else.
   useEffect(() => {
@@ -151,16 +168,22 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     },
   )
 
-  // Keep the 3D canvas drawing whenever the section is anywhere near the screen (not only pinned).
+  // Mount the 3D chunk only once the section is within a screen of view (keeps it off the
+  // critical path), and draw only while it is near the viewport.
+  const [near, setNear] = useState(false)
   useEffect(() => {
     const el = section.current
-    if (!el || !use3D) return
-    const io = new IntersectionObserver(([e]) => setRunning(e.isIntersecting), {
-      rootMargin: '200px',
-    })
+    if (!el) return
+    const io = new IntersectionObserver(
+      ([e]) => {
+        setRunning(e.isIntersecting)
+        if (e.isIntersecting) setNear(true)
+      },
+      { rootMargin: '100% 0px' },
+    )
     io.observe(el)
     return () => io.disconnect()
-  }, [use3D])
+  }, [])
 
   // Panel transition: the old stop exits up, the new one enters in sequence.
   const previous = useRef(0)
@@ -299,7 +322,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     <section ref={section} id={id} aria-labelledby={headingId} data-eye className="eye-section">
       {content.layers.map((l) => (
         <div key={l.src} data-eye-layer data-depth={l.depth} aria-hidden className="eye-layer">
-          <Image src={l.src} alt="" fill sizes="100vw" className="object-cover object-bottom" />
+          <NearImage src={l.src} alt="" fill sizes="100vw" className="object-cover object-bottom" />
         </div>
       ))}
       <div aria-hidden className="eye-layer" data-eye-layer data-depth={0.6}>
@@ -313,12 +336,17 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-[22%] bg-linear-to-b from-ink to-transparent"
       />
+      {/* Bottom fade hands the river over to the next section without a seam. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-[16%] bg-linear-to-t from-ink to-transparent"
+      />
 
       <div className="eye-wheel">
         {wheelProps ? (
           <>
-            {!ready3D || !use3D ? <Wheel2D {...wheelProps} /> : null}
-            {use3D ? (
+            {!ready3D || !use3D || !near ? <Wheel2D {...wheelProps} /> : null}
+            {use3D && near ? (
               <Wheel3D {...wheelProps} running={running} onReady={() => setReady3D(true)} />
             ) : null}
           </>
@@ -331,7 +359,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         aria-hidden
         className="eye-foreground"
       >
-        <Image
+        <NearImage
           src={content.foreground.src}
           alt=""
           fill
@@ -395,7 +423,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
                 </p>
               </div>
               <div data-eye-image className="eye-panel-image">
-                <Image
+                <NearImage
                   src={s.image.src}
                   alt={s.image.alt}
                   fill

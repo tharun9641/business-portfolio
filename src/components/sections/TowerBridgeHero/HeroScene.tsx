@@ -43,13 +43,6 @@ export function HeroScene({ id, labelledBy, children, pin, push, openAngle, bus 
           if (!motion) return
           const stage = q('[data-hero-stage]')[0]
 
-          // Arrival: the scene fades up out of --ink.
-          gsap.fromTo(
-            stage,
-            { autoAlpha: 0, scale: 1.04 },
-            { autoAlpha: 1, scale: 1, duration: 2.2, ease: EASE.entrance },
-          )
-
           // One quiet bus crossing before the bridge opens (skipped on low-tier devices).
           const busEl = q('[data-hero-bus]')[0]
           const busTween =

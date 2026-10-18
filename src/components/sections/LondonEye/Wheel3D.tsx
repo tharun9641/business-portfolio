@@ -27,7 +27,7 @@ export default function Wheel3D(props: Props) {
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
       camera={{ fov: 20, near: 10, far: 20000, position: [0, 0, 4000] }}
     >
-      <Environment resolution={256} frames={1}>
+      <Environment resolution={128} frames={1}>
         {/* Matches the plate: ink sky dome, warm low light from the west, Thames-blue fill. */}
         <Lightformer
           form="rect"
@@ -157,6 +157,10 @@ function Eye({
     return list
   }, [capsules])
 
+  // One geometry each for every shell and core: 2 GPU uploads instead of 64.
+  const shellGeometry = useMemo(() => new THREE.SphereGeometry(1, 24, 16), [])
+  const coreGeometry = useMemo(() => new THREE.SphereGeometry(1, 12, 8), [])
+
   const strutMesh = useRef<THREE.InstancedMesh>(null)
   useLayoutEffect(() => {
     struts.forEach((m, i) => strutMesh.current?.setMatrixAt(i, m))
@@ -261,19 +265,18 @@ function Eye({
                 <mesh
                   ref={(el) => void (shells.current[c] = el)}
                   material={glass}
+                  geometry={shellGeometry}
                   scale={[CAPSULE.halfLength, CAPSULE.halfHeight, CAPSULE.halfHeight]}
-                >
-                  <sphereGeometry args={[1, 24, 16]} />
-                </mesh>
+                />
                 <mesh
                   ref={(el) => void (cores.current[c] = el)}
+                  geometry={coreGeometry}
                   scale={[
                     CAPSULE.halfLength * 0.6,
                     CAPSULE.halfHeight * 0.5,
                     CAPSULE.halfHeight * 0.5,
                   ]}
                 >
-                  <sphereGeometry args={[1, 12, 8]} />
                   <meshBasicMaterial color={LAMP_DIM} toneMapped={false} />
                 </mesh>
               </group>

@@ -2,7 +2,6 @@
 
 import 'lenis/dist/lenis.css'
 import Lenis from 'lenis'
-import { MotionConfig } from 'motion/react'
 import { usePathname } from 'next/navigation'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { gsap, ScrollTrigger } from '@/lib/gsap'
@@ -82,11 +81,7 @@ export function SmoothScrollProvider({ children }: { children: React.ReactNode }
     [lenis, tier, reducedMotion, scrollTo],
   )
 
-  return (
-    <SmoothScrollContext.Provider value={value}>
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
-    </SmoothScrollContext.Provider>
-  )
+  return <SmoothScrollContext.Provider value={value}>{children}</SmoothScrollContext.Provider>
 }
 
 export function useSmoothScroll(): SmoothScrollContextValue {
