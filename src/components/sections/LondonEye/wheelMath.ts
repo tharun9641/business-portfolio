@@ -27,6 +27,15 @@ export function rotationForIndex(i: number, featured: number[], total: number, b
   return boarding - capsuleAngle(featured[i], total)
 }
 
+/**
+ * Index of the capsule currently nearest the boarding point for a given wheel rotation. The light
+ * lives at the boarding point, so it passes from pod to pod as the wheel turns.
+ */
+export function capsuleAt(rotation: number, boarding: number, total: number): number {
+  const c = Math.round(((boarding - rotation) / TAU) * total)
+  return ((c % total) + total) % total
+}
+
 /** Subsection whose capsule is nearest the boarding point. */
 export function activeIndex(p: number, n: number): number {
   return Math.min(n - 1, Math.max(0, Math.round(Math.min(1, Math.max(0, p)) * (n - 1))))

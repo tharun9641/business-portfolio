@@ -4,7 +4,7 @@ import { Environment, Lightformer } from '@react-three/drei'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { useImperativeHandle, useLayoutEffect, useMemo, useRef } from 'react'
 import * as THREE from 'three'
-import { capsuleAngle } from './wheelMath'
+import { capsuleAngle, capsuleAt } from './wheelMath'
 import { CAPSULE, type WheelProps } from './types'
 
 type Props = WheelProps & { running: boolean }
@@ -58,17 +58,9 @@ export default function Wheel3D(props: Props) {
   )
 }
 
-function Eye({
-  layout,
-  capsules,
-  featured,
-  active,
-  initialRotation,
-  handleRef,
-  onSelect,
-  onReady,
-}: Props) {
+function Eye({ layout, capsules, featured, initialRotation, handleRef, onSelect, onReady }: Props) {
   const { viewport, size } = useThree()
+  const boarding = layout.mobile ? -Math.PI / 2 : 0
   const wheel = useRef<THREE.Group>(null)
   const pods = useRef<(THREE.Group | null)[]>([])
   const cores = useRef<(THREE.Mesh | null)[]>([])
@@ -171,12 +163,13 @@ function Eye({
     const rot = rotation.current
     if (wheel.current) wheel.current.rotation.z = rot
     const t = clock.elapsedTime
+    const lit = capsuleAt(rot, boarding, capsules)
     for (let c = 0; c < capsules; c++) {
       const pod = pods.current[c]
       if (!pod) continue
       pod.rotation.z = -rot // keep the capsule level
-      const f = featured.indexOf(c)
-      const isActive = f !== -1 && f === active
+      // The light lives at the boarding point: whichever pod is there now is lit.
+      const isActive = c === lit
       const target = isActive ? 1.08 : 1
       pod.scale.setScalar(THREE.MathUtils.damp(pod.scale.x, target, 6, dt))
       const shell = shells.current[c]
@@ -198,7 +191,6 @@ function Eye({
   })
 
   const podR = 1 + CAPSULE.offset
-  const boarding = layout.mobile ? -Math.PI / 2 : 0
 
   return (
     <group position={hub} scale={scale}>

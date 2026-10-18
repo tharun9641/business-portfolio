@@ -513,6 +513,23 @@ html[data-tier='low'] .hero-bus {
   }
 }
 
+/* SVG wheel pods; [data-lit] is the pod at the boarding point (set imperatively as it turns). */
+.eye-pod {
+  fill: rgb(232 182 90 / 0.28);
+  stroke: rgb(232 226 214 / 0.7);
+  stroke-width: 1;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform 0.35s var(--ease-entrance),
+    fill 0.35s var(--ease-entrance);
+}
+.eye-pod[data-lit] {
+  fill: var(--lamp);
+  transform: scale(1.08);
+  filter: drop-shadow(0 0 10px rgb(232 182 90 / 0.8));
+}
+
 /* --- Locations (src/components/sections/Locations) --- */
 .loc-pulse {
   fill: none;

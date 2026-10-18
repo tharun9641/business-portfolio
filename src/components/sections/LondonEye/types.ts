@@ -19,7 +19,6 @@ export type WheelProps = {
   layout: WheelLayout
   capsules: number
   featured: number[]
-  active: number
   initialRotation: number
   handleRef: RefObject<WheelHandle | null>
   onSelect: (index: number) => void

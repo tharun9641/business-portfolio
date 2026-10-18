@@ -4,6 +4,7 @@ import {
   activeIndex,
   BOARDING,
   capsuleAngle,
+  capsuleAt,
   featuredCapsules,
   rotationForIndex,
   TAU,
@@ -42,4 +43,22 @@ test('active index rounds to the nearest stop and clamps', () => {
   assert.equal(activeIndex(1, 5), 4)
   assert.equal(activeIndex(1.4, 5), 4)
   assert.equal(activeIndex(-1, 5), 0)
+})
+
+test('capsuleAt finds the pod at the boarding point, wrapping round the wheel', () => {
+  const featured = featuredCapsules(5, 32)
+  for (const boarding of [BOARDING.desktop, BOARDING.mobile]) {
+    // At every stop, the lit pod is that stop's featured pod.
+    for (let i = 0; i < 5; i++) {
+      assert.equal(
+        capsuleAt(rotationForIndex(i, featured, 32, boarding), boarding, 32),
+        featured[i],
+      )
+    }
+  }
+  // Mid-ride the light passes through the pods in between, one after another.
+  const step = TAU / 32
+  const seen = [0, 1, 2, 3].map((k) => capsuleAt(-k * step, 0, 32))
+  assert.deepEqual(seen, [0, 1, 2, 3])
+  assert.equal(capsuleAt(-31.6 * step, 0, 32), 0)
 })

@@ -1,7 +1,7 @@
 'use client'
 
-import { useImperativeHandle, useRef } from 'react'
-import { capsuleAngle } from './wheelMath'
+import { useCallback, useImperativeHandle, useLayoutEffect, useRef } from 'react'
+import { BOARDING, capsuleAngle, capsuleAt } from './wheelMath'
 import { CAPSULE, type WheelProps } from './types'
 
 const deg = (r: number) => (r * 180) / Math.PI
@@ -15,26 +15,33 @@ export function Wheel2D({
   layout,
   capsules,
   featured,
-  active,
   initialRotation,
   handleRef,
   onSelect,
 }: WheelProps) {
   const wheel = useRef<SVGGElement>(null)
   const pods = useRef<(SVGGElement | null)[]>([])
-  const { width, height, hubX, hubY, radius: R } = layout
+  const shells = useRef<(SVGEllipseElement | null)[]>([])
+  const last = useRef(initialRotation)
+  const { width, height, hubX, hubY, radius: R, mobile } = layout
+  const boarding = mobile ? BOARDING.mobile : BOARDING.desktop
 
-  useImperativeHandle(
-    handleRef,
-    () => ({
-      setRotation: (rot) => {
-        // SVG's y axis points down, so a maths (counter-clockwise) rotation is a negative SVG angle.
-        wheel.current?.setAttribute('transform', `translate(${hubX} ${hubY}) rotate(${-deg(rot)})`)
-        for (const pod of pods.current) pod?.setAttribute('transform', `rotate(${deg(rot)})`)
-      },
-    }),
-    [hubX, hubY],
+  const apply = useCallback(
+    (rot: number) => {
+      last.current = rot
+      // SVG's y axis points down, so a maths (counter-clockwise) rotation is a negative SVG angle.
+      wheel.current?.setAttribute('transform', `translate(${hubX} ${hubY}) rotate(${-deg(rot)})`)
+      for (const pod of pods.current) pod?.setAttribute('transform', `rotate(${deg(rot)})`)
+      // The light lives at the boarding point and passes from pod to pod as they ride through it.
+      const lit = capsuleAt(rot, boarding, capsules)
+      shells.current.forEach((el, c) => el?.toggleAttribute('data-lit', c === lit))
+    },
+    [hubX, hubY, boarding, capsules],
   )
+
+  useImperativeHandle(handleRef, () => ({ setRotation: apply }), [apply])
+  // A layout change re-renders the starting transform; restore wherever the wheel had got to.
+  useLayoutEffect(() => apply(last.current), [apply])
 
   const podRadius = R * (1 + CAPSULE.offset)
   const rx = R * CAPSULE.halfLength
@@ -83,7 +90,6 @@ export function Wheel2D({
         {Array.from({ length: capsules }, (_, c) => {
           const a = capsuleAngle(c, capsules)
           const f = featured.indexOf(c)
-          const isActive = f !== -1 && f === active
           return (
             <g
               key={c}
@@ -96,17 +102,10 @@ export function Wheel2D({
                 transform={`rotate(${deg(initialRotation)})`}
               >
                 <ellipse
+                  ref={(el) => void (shells.current[c] = el)}
+                  className="eye-pod"
                   rx={rx}
                   ry={ry}
-                  fill={isActive ? 'var(--lamp)' : 'rgb(232 182 90 / 0.28)'}
-                  stroke="rgb(232 226 214 / 0.7)"
-                  strokeWidth={1}
-                  style={{
-                    transform: `scale(${isActive ? 1.08 : 1})`,
-                    transition:
-                      'transform 0.6s var(--ease-entrance), fill 0.6s var(--ease-entrance)',
-                    filter: isActive ? 'drop-shadow(0 0 10px rgb(232 182 90 / 0.8))' : undefined,
-                  }}
                 />
               </g>
             </g>
