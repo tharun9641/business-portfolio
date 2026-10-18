@@ -9,9 +9,15 @@ export const TAU = Math.PI * 2
 /** Boarding point: 3 o'clock on desktop, 6 o'clock on mobile. */
 export const BOARDING = { desktop: 0, mobile: -Math.PI / 2 } as const
 
-/** N featured capsules spread evenly round the wheel, starting at capsule 0. */
-export function featuredCapsules(n: number, total: number): number[] {
-  return Array.from({ length: n }, (_, i) => Math.round((i * total) / n) % total)
+/**
+ * The capsule boarded at each of N stops. With `cabinsPerStop` (e.g. 1), consecutive stops are that
+ * many pods apart, so each stop turns the wheel by just that many cabins; without it, the N pods
+ * are spread evenly round the wheel.
+ */
+export function featuredCapsules(n: number, total: number, cabinsPerStop?: number): number[] {
+  return Array.from({ length: n }, (_, i) =>
+    cabinsPerStop ? (i * cabinsPerStop) % total : Math.round((i * total) / n) % total,
+  )
 }
 
 /** Resting angle of capsule `c` on an unrotated wheel. */

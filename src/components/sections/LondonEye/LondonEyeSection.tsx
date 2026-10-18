@@ -59,7 +59,7 @@ function computeLayout(
 export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>) {
   const n = content.subsections.length
   const total = content.wheel.capsules
-  const featured = featuredCapsules(n, total)
+  const featured = featuredCapsules(n, total, content.wheel.cabinsPerStop)
   const section = useRef<HTMLElement>(null)
   // Separate handles: the SVG stand-in unmounts once the 3D wheel is ready, and React clears an
   // imperative handle on unmount, so a shared ref would leave the 3D wheel without rotation.
@@ -223,7 +223,12 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
   useGSAP(
     () => {
       const el = section.current
-      const target = rotationForIndex(active, featuredCapsules(n, total), total, boarding)
+      const target = rotationForIndex(
+        active,
+        featuredCapsules(n, total, content.wheel.cabinsPerStop),
+        total,
+        boarding,
+      )
       const fromStop = previous.current
       previous.current = active
       const fromRot = rotation.current
@@ -237,7 +242,8 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
       const next = panels[active]
       const prev = panels[fromStop]
       const dir = active > fromStop ? 1 : -1
-      const SPIN = DURATION.entrance * 1.25
+      // A slow one-cabin ride (≈2.2 s) with a gentle ease; everything else is timed against it.
+      const SPIN = DURATION.entrance * 1.8
       const proxy = { rot: fromRot }
       panels.forEach((p) => p !== prev && p !== next && gsap.set(p, { opacity: 0, yPercent: 0 }))
       const lines = splits.current[active]?.lines ?? []
@@ -247,7 +253,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         .to(proxy, {
           rot: target,
           duration: SPIN,
-          ease: EASE.scene,
+          ease: 'power2.inOut',
           onUpdate: () => applyRotation(proxy.rot),
         })
         .to(prev, { yPercent: -35 * dir, opacity: 0, duration: SPIN * 0.45, ease: 'power2.in' }, 0)
@@ -295,7 +301,10 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
           SPIN * 0.9,
         )
     },
-    { scope: section, dependencies: [active, boarding, n, total, reducedMotion] },
+    {
+      scope: section,
+      dependencies: [active, boarding, n, total, content.wheel.cabinsPerStop, reducedMotion],
+    },
   )
 
   // Tabs: arrow keys move between stops (roving tabindex).

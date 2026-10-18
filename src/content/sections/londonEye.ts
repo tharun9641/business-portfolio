@@ -25,6 +25,8 @@ export type LondonEyeContent = {
     hubX: number
     /** Wheel radius as a fraction of the viewport height (desktop) / width (mobile). */
     radius: { desktop: number; mobile: number }
+    /** How many cabins the wheel turns per subsection (omit to spread stops round the wheel). */
+    cabinsPerStop?: number
   }
 }
 
@@ -98,5 +100,5 @@ export const londonEyeContent: LondonEyeContent = {
     duration: 95,
   },
   foreground: { src: '/assets/eye/foreground.webp', depth: 0.9 },
-  wheel: { capsules: 32, hubX: 0.2, radius: { desktop: 0.46, mobile: 0.95 } },
+  wheel: { capsules: 32, hubX: 0.2, radius: { desktop: 0.46, mobile: 0.95 }, cabinsPerStop: 1 },
 }

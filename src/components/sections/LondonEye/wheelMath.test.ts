@@ -19,6 +19,14 @@ test('featured capsules are evenly spaced and distinct', () => {
   for (let n = 4; n <= 8; n++) assert.equal(new Set(featuredCapsules(n, 32)).size, n)
 })
 
+test('one cabin per stop: adjacent pods, each stop turns the wheel by exactly one cabin', () => {
+  const featured = featuredCapsules(5, 32, 1)
+  assert.deepEqual(featured, [0, 1, 2, 3, 4])
+  for (let i = 1; i < 5; i++) {
+    close(rotationForIndex(i - 1, featured, 32, 0) - rotationForIndex(i, featured, 32, 0), TAU / 32)
+  }
+})
+
 test('featured capsule i sits at the boarding point at subsection i', () => {
   const featured = featuredCapsules(5, 32)
   for (const boarding of [BOARDING.desktop, BOARDING.mobile]) {

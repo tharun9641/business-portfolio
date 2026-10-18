@@ -239,9 +239,9 @@ for (const vp of VIEWPORTS) {
       ).toHaveText(new RegExp(`^0${i + 1} / 0${n}$`))
       await page.screenshot({ path: path.join(OUT, `eye-${vp.name}-${i}.png`) })
     }
-    // The wheel turns one way, a clear step per stop, with the 3D wheel live.
+    // The wheel turns one way, one cabin per stop, with the 3D wheel live.
     await expect(page.locator('#process canvas')).toHaveCount(1)
-    for (let i = 1; i < n; i++) expect(rotations[i]).toBeLessThan(rotations[i - 1] - 0.5)
+    for (let i = 1; i < n; i++) expect(rotations[i]).toBeLessThan(rotations[i - 1] - 0.15)
   })
 }
 
@@ -328,7 +328,7 @@ test('London Eye: wheel holds still within a stop and turns only on a new stop',
   await page.waitForTimeout(250)
   expect(await rot()).toBe(atStop)
   await eyeStop(page, 2)
-  expect(Number(await rot())).toBeLessThan(Number(atStop) - 0.5)
+  expect(Number(await rot())).toBeLessThan(Number(atStop) - 0.15)
 })
 
 test('London Eye: panel and text arrive in sync with the wheel', async ({ page }) => {
@@ -346,7 +346,7 @@ test('London Eye: panel and text arrive in sync with the wheel', async ({ page }
   await page.waitForTimeout(500)
   expect(Number(await body.evaluate((e) => getComputedStyle(e).opacity))).toBeLessThan(0.1)
   // Once the capsule has arrived, the panel has landed and its text is fully visible.
-  await page.waitForTimeout(2200)
+  await page.waitForTimeout(3200)
   expect(Number(await body.evaluate((e) => getComputedStyle(e).opacity))).toBe(1)
   expect(
     await page
