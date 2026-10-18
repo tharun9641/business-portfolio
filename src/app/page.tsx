@@ -1,4 +1,5 @@
 import { Fragment } from 'react'
+import { ScrollProgress } from '@/components/motion/ScrollProgress'
 import { sections } from '@/components/sections/registry'
 import { site } from '@/content/site'
 
@@ -31,6 +32,7 @@ export default function Home() {
         // Escape "<" so content can never close the script tag.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, '\\u003c') }}
       />
+      <ScrollProgress />
       {sections.map((section) => (
         <Fragment key={section.id}>{section.render()}</Fragment>
       ))}

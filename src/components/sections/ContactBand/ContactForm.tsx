@@ -1,5 +1,6 @@
 'use client'
 
+import { MotionConfig, motion } from 'motion/react'
 import { useActionState, useId } from 'react'
 import { sendEnquiry, type ContactState } from '@/app/actions/contact'
 import type { ContactContent } from '@/content/sections/contact'
@@ -91,10 +92,55 @@ export function ContactForm({ content }: { content: ContactContent }) {
         >
           {pending ? content.submit.pending : content.submit.idle}
         </button>
-        <p role="status" aria-live="polite" className="text-step--1 text-stone-80">
+        <p
+          role="status"
+          aria-live="polite"
+          className="inline-flex items-center gap-2 text-step--1 text-stone-80"
+        >
+          {sent ? <SentCheck /> : null}
           {sent ? content.success : state.status === 'error' ? state.message : ''}
         </p>
       </div>
     </form>
+  )
+}
+
+/** A lamp-gold ring and tick that draw themselves when the enquiry lands. */
+function SentCheck() {
+  return (
+    <MotionConfig reducedMotion="user">
+      <motion.svg
+        aria-hidden
+        width="22"
+        height="22"
+        viewBox="0 0 24 24"
+        fill="none"
+        className="shrink-0 text-lamp"
+        initial={{ scale: 0.6, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: 'spring', stiffness: 320, damping: 20 }}
+      >
+        <motion.circle
+          cx="12"
+          cy="12"
+          r="10.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.5, ease: 'easeOut' }}
+        />
+        <motion.path
+          d="M7.5 12.5l3 3 6-6.5"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          initial={{ pathLength: 0 }}
+          animate={{ pathLength: 1 }}
+          transition={{ duration: 0.3, delay: 0.35, ease: 'easeOut' }}
+        />
+      </motion.svg>
+    </MotionConfig>
   )
 }
