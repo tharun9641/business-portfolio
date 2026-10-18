@@ -1,6 +1,6 @@
 /**
  * Grades the location photos (incoming-assets/locations/*.jpg, Pexels) to the site's blue hour and
- * writes 1200×900 AVIFs to public/assets/locations/.
+ * writes 2000×1250 (16:10) AVIFs, sized for the full-screen stage, to public/assets/locations/.
  *
  *   node scripts/locations/build.mjs
  *
@@ -16,8 +16,8 @@ import { guidedFilter, levels, luminance, readGray, readRGB, writeImage } from '
 
 const IN = 'incoming-assets/locations'
 const OUT = 'public/assets/locations'
-const W = 1200
-const H = 900
+const W = 2000
+const H = 1250
 
 /** Night photos: a light unifying grade (ink shadows, Thames mids, warm lamplit highlights). */
 const RAMP = [
@@ -45,9 +45,10 @@ const RAMP_STONE = [
 /** strength: 0 = untouched … 1 = full grade. focus: crop centre as a fraction of width/height. */
 const PHOTOS = [
   { slug: 'tower-of-london', relight: true, focus: [0.45, 0.55] },
-  { slug: 'the-shard', strength: 0.3, focus: [0.4, 0.5] },
+  { slug: 'the-shard', strength: 0.3, focus: [0.4, 0.2] },
   { slug: 'st-pauls', strength: 0.3, focus: [0.5, 0.45] },
   { slug: 'covent-garden', relight: true, focus: [0.5, 0.5] },
+  { slug: 'westminster', strength: 0.3, focus: [0.55, 0.5] },
   { slug: 'westminster-abbey', relight: true, focus: [0.5, 0.5] },
   { slug: 'trafalgar-square', strength: 0.3, focus: [0.45, 0.55] },
   { slug: 'buckingham-palace', relight: true, focus: [0.55, 0.5] },
@@ -59,7 +60,7 @@ await mkdir('assets-src/work/locations', { recursive: true })
 for (const p of PHOTOS) {
   const src = path.join(IN, `${p.slug}.jpg`)
   const meta = await sharp(src).rotate().metadata()
-  // 4:3 crop around the focus point, then resize to the card size.
+  // 16:10 crop around the focus point, then resize to the card size.
   const scale = Math.min(meta.width / W, meta.height / H)
   const cw = Math.round(W * scale)
   const ch = Math.round(H * scale)
@@ -99,6 +100,6 @@ for (const p of PHOTOS) {
     const graded = gradeRamp(rgb, new Float32Array(n).fill(1), n, RAMP, { keepChroma: 0.3 })
     out = blend(rgb, graded, new Float32Array(n).fill(p.strength), n)
   }
-  await writeImage(path.join(OUT, `${p.slug}.avif`), out, W, H, null, { quality: 62 })
+  await writeImage(path.join(OUT, `${p.slug}.avif`), out, W, H, null, { quality: 50 })
   console.log('wrote', p.slug)
 }

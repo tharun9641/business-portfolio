@@ -531,71 +531,39 @@ html[data-tier='low'] .hero-bus {
 }
 
 /* --- Locations (src/components/sections/Locations) --- */
-.loc-pulse {
-  fill: none;
-  stroke: var(--lamp);
-  stroke-width: 1.5;
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: loc-pulse 2.4s var(--ease-entrance) infinite;
+/* Place names across the top of the stage; scrolls sideways on phones without a scrollbar. */
+.loc-bar {
+  scrollbar-width: none;
 }
-@keyframes loc-pulse {
-  from {
-    transform: scale(0.6);
-    opacity: 0.8;
-  }
-  to {
-    transform: scale(2.6);
-    opacity: 0;
-  }
+.loc-bar::-webkit-scrollbar {
+  display: none;
 }
-.loc-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-.loc-chip {
+.loc-name {
+  position: relative;
   min-height: 44px;
-  padding: 0.5rem 1rem;
-  border: 1px solid var(--hairline);
-  border-radius: 999px;
+  padding: 0.5rem 0.75rem;
   font-size: var(--step--1);
-  color: var(--stone-80);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  color: var(--stone-60);
+  text-shadow: 0 1px 12px rgb(11 18 32 / 0.8);
   transition:
     color var(--dur-micro) var(--ease-entrance),
-    border-color var(--dur-micro) var(--ease-entrance),
-    background-color var(--dur-micro) var(--ease-entrance),
     scale var(--dur-micro) var(--ease-entrance);
 }
-/* Same press as the buttons, so a pick feels physical. */
-.loc-chip:active {
+.loc-name:hover {
+  color: var(--stone);
+}
+.loc-name:active {
   scale: 0.96;
 }
+.loc-name[aria-pressed='true'] {
+  color: var(--stone);
+}
 @media (prefers-reduced-motion: reduce) {
-  .loc-chip:active {
+  .loc-name:active {
     scale: none;
   }
-}
-.loc-chip:hover {
-  border-color: rgb(232 226 214 / 0.6);
-  color: var(--stone);
-}
-.loc-chip[aria-pressed='true'] {
-  border-color: var(--lamp);
-  background: rgb(232 182 90 / 0.12);
-  color: var(--stone);
-}
-/* Floodlight sweep on a new location photo: a soft warm band, screened over the image. */
-.loc-sweep {
-  background: linear-gradient(
-    to right,
-    transparent 15%,
-    rgb(232 182 90 / 0.1) 38%,
-    rgb(255 236 200 / 0.32) 50%,
-    rgb(232 182 90 / 0.1) 62%,
-    transparent 85%
-  );
-  mix-blend-mode: screen;
 }
 /* Foreground light particles: two offset dot fields, GPU-cheap (a static background). */
 .loc-particles {
@@ -609,10 +577,4 @@ html[data-tier='low'] .hero-bus {
     0 0,
     110px 140px;
   opacity: 0.5;
-}
-@media (prefers-reduced-motion: reduce) {
-  .loc-pulse {
-    animation: none;
-    opacity: 0;
-  }
 }

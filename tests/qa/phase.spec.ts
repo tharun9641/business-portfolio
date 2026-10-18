@@ -288,13 +288,16 @@ test('London Eye: reduced motion shows every stop as a list', async ({ browser }
   await context.close()
 })
 
-test('Locations: list selects a landmark, card and map follow', async ({ page }) => {
+test('Locations: a name jumps the stage to that landmark; photo and card follow', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1440, height: 900 })
   await page.goto('/')
   await settle(page, 2500)
-  await page.locator('#locations').scrollIntoViewIfNeeded()
+  // The section is several screens tall while pinned; start at its heading, before the stage.
+  await page.locator('#locations-heading').scrollIntoViewIfNeeded()
   await settle(page, 2500)
-  await expect(page.locator('#locations [data-loc-pin]')).toHaveCount(8)
+  await expect(page.locator('#locations .loc-name')).toHaveCount(8)
   const card = page.locator('#locations [aria-live="polite"]')
   await expect(card.getByRole('heading', { level: 3 })).toHaveText('Tower of London')
   await page.getByRole('button', { name: 'Westminster', exact: true }).click()
@@ -307,7 +310,7 @@ test('Locations: list selects a landmark, card and map follow', async ({ page })
     'href',
     /google\.com\/maps\/search\/\?api=1&query=Palace%20of%20Westminster/,
   )
-  const photo = page.locator('#locations [data-loc-current] img')
+  const photo = page.locator('#locations [data-loc-slide][data-active] img')
   await expect(photo).toHaveAttribute('alt', /Palace of Westminster/)
   await expect(photo).toHaveJSProperty('complete', true)
   await page.locator('#locations').screenshot({ path: path.join(OUT, 'locations-1440.png') })

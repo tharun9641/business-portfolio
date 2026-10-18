@@ -13,7 +13,9 @@ import sharp from 'sharp'
 
 const ROOT = 'public/assets'
 const SERVE_WIDTH = 1920
-const BUDGET_KB = { hero: 350, default: 250 }
+// Location photos are full-screen like the hero, so they share its budget and are served at q60.
+const BUDGET_KB = { hero: 350, locations: 350, default: 250 }
+const QUALITY = { locations: 60, default: 75 }
 const IMAGE = /\.(avif|webp|png|jpe?g)$/i
 
 async function walk(dir) {
@@ -32,9 +34,10 @@ let failed = 0
 for (const file of files) {
   const meta = await sharp(file).metadata()
   const width = Math.min(meta.width, SERVE_WIDTH)
-  const served = await sharp(file).resize({ width }).avif({ quality: 75 }).toBuffer()
   const rel = path.relative('public', file)
   const group = rel.split(path.sep)[1]
+  const quality = QUALITY[group] ?? QUALITY.default
+  const served = await sharp(file).resize({ width }).avif({ quality }).toBuffer()
   const budget = BUDGET_KB[group] ?? BUDGET_KB.default
   const kb = Math.round(served.length / 1024)
   const ok = kb <= budget

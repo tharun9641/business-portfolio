@@ -6,9 +6,9 @@ import { SplitHeading } from '@/components/motion/SplitHeading'
 import { NearImage } from '@/components/ui/NearImage'
 import type { LocationsContent } from '@/content/sections/locations'
 import type { SectionProps } from '@/content/types'
-import { LocationsMap } from './LocationsMap'
+import { LocationsStage } from './LocationsStage'
 
-/** "Locations": central London's landmarks on a night map, between the Eye and the contact band. */
+/** "Locations": an intro, then a full-screen stage of central London landmarks laid over one another on scroll. */
 export function LocationsSection({ id, content }: SectionProps<LocationsContent>) {
   const headingId = `${id}-heading`
   return (
@@ -53,9 +53,9 @@ export function LocationsSection({ id, content }: SectionProps<LocationsContent>
             <p className="mt-6 text-step-0 leading-body text-stone-80">{content.intro}</p>
           </Reveal>
         </div>
-        <div className="mt-(--space-8)">
-          <LocationsMap content={content} />
-        </div>
+      </div>
+      <div className="relative z-(--z-content)">
+        <LocationsStage content={content} />
       </div>
     </ParallaxScene>
   )

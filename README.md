@@ -78,4 +78,4 @@ Deploy to Vercel with zero config: `npx vercel` for a preview, `npx vercel --pro
 
 ## Credits
 
-The hero photograph is by Michal Libertowski on [Pexels](https://www.pexels.com/photo/iconic-tower-bridge-overcast-view-in-london-37544947/) (Pexels licence), relit and layered for this site. Location photos (Tower of London, the Shard, St Paul’s, Covent Garden, Westminster Abbey, Trafalgar Square, Buckingham Palace) are from Pexels (credits in `docs/ASSETS.md`), graded to blue hour. The London Eye backdrop and interior images were generated with Pollinations (FLUX). The wheel is procedural.
+The hero photograph is by Michal Libertowski on [Pexels](https://www.pexels.com/photo/iconic-tower-bridge-overcast-view-in-london-37544947/) (Pexels licence), relit and layered for this site. Location photos (Tower of London, the Shard, St Paul’s, Covent Garden, Westminster, Westminster Abbey, Trafalgar Square, Buckingham Palace) are from Pexels (credits in `docs/ASSETS.md`), graded to blue hour. The London Eye backdrop and interior images were generated with Pollinations (FLUX). The wheel is procedural.

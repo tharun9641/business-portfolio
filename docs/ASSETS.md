@@ -155,15 +155,15 @@ All hero layers share one 4240×2832 canvas, so they register exactly. Alpha lay
 
 ### Locations (Phase 7)
 
-All images are 1200×900 (4:3) AVIF in `public/assets/locations/`, graded to blue hour by `node scripts/locations/build.mjs`. Sources are in `incoming-assets/locations/` (Pexels, 2400px, Pexels licence; downloaded 2026-10-18 with PM approval).
+All images are 2000×1250 (16:10) AVIF in `public/assets/locations/`, shown full screen and served at quality 60, graded to blue hour by `node scripts/locations/build.mjs`. Sources are in `incoming-assets/locations/` (Pexels, 2400px, Pexels licence; downloaded 2026-10-18 with PM approval).
 
 | File                     | Source photo (Pexels)                                                             | Grade                                                |
 | ------------------------ | --------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `tower-of-london.avif`   | #32261043 "Tower of London along the Thames River" (Indu Bikash Sarker)           | relit: depth-masked sky to blue hour, stone floodlit |
 | `the-shard.avif`         | #38340110 "The Shard and Illuminated London Bridge at Night" (Paul Bisseker)      | light unifying grade                                 |
 | `st-pauls.avif`          | #10912910 "St. Paul's Cathedral during Nighttime" (Ian Probets)                   | light                                                |
-| `westminster-abbey.avif` | #33334264 "Stunning View of Westminster Abbey in London" (William ZALI)         | relit: depth-masked sky to blue hour, stone floodlit |
+| `westminster-abbey.avif` | #33334264 "Stunning View of Westminster Abbey in London" (William ZALI)           | relit: depth-masked sky to blue hour, stone floodlit |
 | `covent-garden.avif`     | #8187087 "Hallway Inside a Shopping Center" (Samuel Sweet)                        | relit (interior, lamplit)                            |
 | `trafalgar-square.avif`  | #16162422 "A Trafalgar Square in London" (Wender Junior Souza Vieira)             | light                                                |
 | `buckingham-palace.avif` | #33321682 "Buckingham Palace and Victoria Memorial in London" (Stephan Leuzinger) | relit                                                |
-| `westminster.avif`       | Crop of the Eye master (generated)                                                | —                                                    |
+| `westminster.avif`       | #7822980 "Big Ben London during Night Time" (Shreyas Sane)                        | light                                                |
