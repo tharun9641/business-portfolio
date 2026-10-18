@@ -33,3 +33,7 @@ Please confirm or replace: the number of subsections (4–8), the headings, the 
 
 - `eye/sub-04` ("Build") came out as a finished hallway rather than a renovation in progress. Keep it, or regenerate once pollen is topped up.
 - `eye/sub-05` ("Live") and `eye/foreground` are placeholders until there is pollen (about 0.06 total).
+
+## Locations (Phase 7)
+
+The landmark names and positions are real. The one-line notes tying each landmark to the studio are placeholder copy. Edit them in `src/content/sections/locations.ts`, where you can also add or remove places (each needs a name, area, `latLon`, body and `mapsQuery`).

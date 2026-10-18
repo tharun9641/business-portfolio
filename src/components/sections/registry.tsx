@@ -2,11 +2,13 @@ import type { ComponentType, ReactNode } from 'react'
 import { contactContent } from '@/content/sections/contact'
 import { heroContent } from '@/content/sections/hero'
 import { londonEyeContent } from '@/content/sections/londonEye'
+import { locationsContent } from '@/content/sections/locations'
 import { site } from '@/content/site'
 import type { SectionProps } from '@/content/types'
 import { ContactBand } from './ContactBand/ContactBand'
 import { TowerBridgeHero } from './TowerBridgeHero/TowerBridgeHero'
 import { LondonEyeSection } from './LondonEye/LondonEyeSection'
+import { LocationsSection } from './Locations/LocationsSection'
 import { Footer } from './Footer/Footer'
 
 export type SectionEntry = {
@@ -35,6 +37,12 @@ export const sections: SectionEntry[] = [
     navLabel: 'Process',
     component: LondonEyeSection,
     content: londonEyeContent,
+  }),
+  defineSection({
+    id: 'locations',
+    navLabel: 'Locations',
+    component: LocationsSection,
+    content: locationsContent,
   }),
   defineSection({
     id: 'contact',

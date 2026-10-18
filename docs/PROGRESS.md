@@ -19,13 +19,18 @@ Read this first when resuming. Update it at the end of every working session.
 | 2 Assets            | approved, committed                   | `phase-2-assets`     |
 | 3 Tower Bridge hero | **complete, waiting for PM approval** | `phase-3-hero`       |
 
-## Current phase: 6 Ship
+## Current phase: 7 Additions (PM requests, 2026-10-18)
 
-### Remaining
+### Done
 
-1. Write the README: editing content, swapping images, adding a section, scripts, env vars.
-2. Deploy to Vercel. This needs the PM's Vercel login; set `MAIL_PROVIDER` and the related env vars.
-3. Run the final checks against the deployed URL, then report.
+- Fixed the London Eye wheel not turning between subsections (D-46).
+- Added the Locations section after the Eye (D-47).
+- QA: 21/21 Playwright tests (including the Locations test and a rotation assertion), axe clean, 15/15 cross-browser.
+
+## Phase 6 Ship (done)
+
+- README written. Vercel project `london-portfolio` created with `vercel.json` (framework) and `.vercelignore`.
+- Preview deploys verify correctly. **Production** (`london-portfolio.vercel.app`) still points at the first, broken build until the PM decides whether to promote a preview.
 
 ## Phase 5 (done)
 

@@ -62,12 +62,28 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
   const total = content.wheel.capsules
   const featured = featuredCapsules(n, total)
   const section = useRef<HTMLElement>(null)
-  const wheelHandle = useRef<WheelHandle | null>(null)
+  // Separate handles: the SVG stand-in unmounts once the 3D wheel is ready, and React clears an
+  // imperative handle on unmount, so a shared ref would leave the 3D wheel without rotation.
+  const handle2D = useRef<WheelHandle | null>(null)
+  const handle3D = useRef<WheelHandle | null>(null)
+  const rotation = useRef<number | null>(null)
+  const wheelBox = useRef<HTMLDivElement>(null)
+  const applyRotation = useCallback((rot: number) => {
+    rotation.current = rot
+    handle2D.current?.setRotation(rot)
+    handle3D.current?.setRotation(rot)
+    wheelBox.current?.setAttribute('data-rotation', rot.toFixed(3))
+  }, [])
   const trigger = useRef<ScrollTrigger | null>(null)
   const [layout, setLayout] = useState<WheelLayout | null>(null)
   const [active, setActive] = useState(0)
   const [use3D, setUse3D] = useState(false)
   const [ready3D, setReady3D] = useState(false)
+  const on3DReady = useCallback(() => {
+    // Pick up wherever the scroll has already turned the wheel.
+    if (rotation.current !== null) handle3D.current?.setRotation(rotation.current)
+    setReady3D(true)
+  }, [])
   const [running, setRunning] = useState(false)
   const { tier, reducedMotion, scrollTo } = useSmoothScroll()
   const uid = useId()
@@ -143,9 +159,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
               ease: 'power1.inOut',
             },
             onUpdate: (self) => {
-              wheelHandle.current?.setRotation(
-                rotationForProgress(self.progress, featured, total, boarding),
-              )
+              applyRotation(rotationForProgress(self.progress, featured, total, boarding))
               setActive(activeIndex(self.progress, n))
             },
           },
@@ -292,14 +306,23 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
   }
 
   const initialRotation = rotationForIndex(0, featured, total, boarding)
-  const wheelProps = layout && {
+  const props2D = layout && {
     layout,
     capsules: total,
     featured,
     active,
     initialRotation,
-    handleRef: wheelHandle,
     onSelect: goTo,
+    handleRef: handle2D,
+  }
+  const props3D = layout && {
+    layout,
+    capsules: total,
+    featured,
+    active,
+    initialRotation,
+    onSelect: goTo,
+    handleRef: handle3D,
   }
   // Connector: from the boarding capsule's outer edge to the panel.
   const connector =
@@ -342,13 +365,11 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         className="pointer-events-none absolute inset-x-0 bottom-0 z-[4] h-[16%] bg-linear-to-t from-ink to-transparent"
       />
 
-      <div className="eye-wheel">
-        {wheelProps ? (
+      <div ref={wheelBox} className="eye-wheel">
+        {props2D && props3D ? (
           <>
-            {!ready3D || !use3D || !near ? <Wheel2D {...wheelProps} /> : null}
-            {use3D && near ? (
-              <Wheel3D {...wheelProps} running={running} onReady={() => setReady3D(true)} />
-            ) : null}
+            {!ready3D || !use3D || !near ? <Wheel2D {...props2D} /> : null}
+            {use3D && near ? <Wheel3D {...props3D} running={running} onReady={on3DReady} /> : null}
           </>
         ) : null}
       </div>

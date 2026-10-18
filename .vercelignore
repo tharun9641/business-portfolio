@@ -1,0 +1,7 @@
+# Not needed to build or serve the site
+docs/qa
+assets-src
+incoming-assets
+test-results
+playwright-report
+.cache

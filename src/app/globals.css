@@ -512,3 +512,68 @@ html[data-tier='low'] .hero-bus {
     display: none;
   }
 }
+
+/* --- Locations (src/components/sections/Locations) --- */
+.loc-pulse {
+  fill: none;
+  stroke: var(--lamp);
+  stroke-width: 1.5;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: loc-pulse 2.4s var(--ease-entrance) infinite;
+}
+@keyframes loc-pulse {
+  from {
+    transform: scale(0.6);
+    opacity: 0.8;
+  }
+  to {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+.loc-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.loc-chip {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--hairline);
+  border-radius: 999px;
+  font-size: var(--step--1);
+  color: var(--stone-80);
+  transition:
+    color var(--dur-micro) var(--ease-entrance),
+    border-color var(--dur-micro) var(--ease-entrance),
+    background-color var(--dur-micro) var(--ease-entrance);
+}
+.loc-chip:hover {
+  border-color: rgb(232 226 214 / 0.6);
+  color: var(--stone);
+}
+.loc-chip[aria-pressed='true'] {
+  border-color: var(--lamp);
+  background: rgb(232 182 90 / 0.12);
+  color: var(--stone);
+}
+/* Foreground light particles: two offset dot fields, GPU-cheap (a static background). */
+.loc-particles {
+  background-image:
+    radial-gradient(circle, rgb(232 182 90 / 0.5) 0 1px, transparent 1.5px),
+    radial-gradient(circle, rgb(232 226 214 / 0.35) 0 1px, transparent 1.5px);
+  background-size:
+    220px 260px,
+    340px 300px;
+  background-position:
+    0 0,
+    110px 140px;
+  opacity: 0.5;
+}
+@media (prefers-reduced-motion: reduce) {
+  .loc-pulse {
+    animation: none;
+    opacity: 0;
+  }
+}

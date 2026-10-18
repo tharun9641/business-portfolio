@@ -85,3 +85,10 @@ All values come from `src/content/sections/hero.ts`.
   - `high`/`mid`: the R3F wheel is lazy-loaded (`next/dynamic`, `ssr:false`), with the SVG wheel shown until its first frame. The canvas only renders while the section is near the viewport.
   - `low`: SVG only.
 - **Reduced motion:** no pin, a static SVG wheel, and every stop as a list.
+
+## Locations (`LocationsSection`, `LocationsMap`)
+
+- **Map reveal:** clip-path wipe-up once, at 80% of the viewport.
+- **River draw:** the Thames path draws with stroke-dashoffset, scrubbed from `top 75%` to `center 55%`.
+- **Pins:** pop in with `back.out` and a stagger once the map is mid-screen. Each pulses with a CSS ring loop, which stops under reduced motion.
+- **Background:** sky, mist and light particles drift by depth via `ParallaxScene`.

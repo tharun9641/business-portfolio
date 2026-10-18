@@ -57,9 +57,7 @@ test('layers separate by depth while scrolling', async ({ page }) => {
   await expect(page.locator('html')).toHaveClass(/lenis/)
 
   // Bring the second scene to mid-viewport, then compare depths.
-  await page.evaluate(() =>
-    document.getElementById('studio')?.scrollIntoView({ block: 'center' }),
-  )
+  await page.evaluate(() => document.getElementById('studio')?.scrollIntoView({ block: 'center' }))
   await settle(page, 2000)
   const before = await layerOffsets(page, 'studio')
   await page.mouse.wheel(0, 400)
@@ -229,14 +227,21 @@ for (const vp of VIEWPORTS) {
     await settle(page, 3000)
     const n = await page.locator('#process [role=tab]').count()
     expect(n).toBeGreaterThanOrEqual(4)
+    const rotations: number[] = []
     for (let i = 0; i < n; i++) {
       await eyeStop(page, i)
+      rotations.push(
+        Number(await page.locator('#process .eye-wheel').getAttribute('data-rotation')),
+      )
       expect(await selectedTab(page)).toBe(i)
       await expect(
         page.locator('#process [data-eye-panel][data-active] [data-eye-number]'),
       ).toHaveText(new RegExp(`^0${i + 1} / 0${n}$`))
       await page.screenshot({ path: path.join(OUT, `eye-${vp.name}-${i}.png`) })
     }
+    // The wheel turns one way, a clear step per stop, with the 3D wheel live.
+    await expect(page.locator('#process canvas')).toHaveCount(1)
+    for (let i = 1; i < n; i++) expect(rotations[i]).toBeLessThan(rotations[i - 1] - 0.5)
   })
 }
 
@@ -281,4 +286,26 @@ test('London Eye: reduced motion shows every stop as a list', async ({ browser }
   await expect(page.locator('#process canvas')).toHaveCount(0)
   await page.locator('#process').screenshot({ path: path.join(OUT, 'eye-reduced-motion-1440.png') })
   await context.close()
+})
+
+test('Locations: list selects a landmark, card and map follow', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await page.goto('/')
+  await settle(page, 2500)
+  await page.locator('#locations').scrollIntoViewIfNeeded()
+  await settle(page, 2500)
+  await expect(page.locator('#locations [data-loc-pin]')).toHaveCount(8)
+  const card = page.locator('#locations [aria-live="polite"]')
+  await expect(card.getByRole('heading', { level: 3 })).toHaveText('Tower Bridge')
+  await page.getByRole('button', { name: 'Westminster' }).click()
+  await expect(card.getByRole('heading', { level: 3 })).toHaveText('Westminster')
+  await expect(page.getByRole('button', { name: 'Westminster' })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  )
+  await expect(card.getByRole('link', { name: /Open in Maps/ })).toHaveAttribute(
+    'href',
+    /google\.com\/maps\/search\/\?api=1&query=Palace%20of%20Westminster/,
+  )
+  await page.locator('#locations').screenshot({ path: path.join(OUT, 'locations-1440.png') })
 })
