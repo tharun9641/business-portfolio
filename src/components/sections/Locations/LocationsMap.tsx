@@ -8,6 +8,8 @@ import { DURATION, EASE, SCRUB } from '@/lib/motion'
 import { MAP_H, MAP_W, project, smoothPath, THAMES } from './geo'
 
 const river = smoothPath(THAMES.map(project))
+/** Strips in the photo's shutter reveal on each change of place. */
+const SHUTTERS = 5
 
 /**
  * Night map of central London: the Thames draws itself as you scroll, landmark pins pop in, and
@@ -90,7 +92,7 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
     { scope: root },
   )
 
-  // Each new place: its photo wipes up over the last one and settles from a slow push-in, while
+  // Each new place: its photo opens over the last one in shutters and settles from a slow push-in, while
   // the card's lines rise in turn. Tweens overwrite, so rapid picks never stack or stall.
   const firstShow = useRef(true)
   useGSAP(
@@ -99,16 +101,26 @@ export function LocationsMap({ content }: { content: LocationsContent }) {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const q = gsap.utils.selector(root)
-        gsap.fromTo(
-          q('[data-loc-current]'),
-          { clipPath: 'inset(100% 0% 0% 0%)' },
-          {
-            clipPath: 'inset(0% 0% 0% 0%)',
-            duration: DURATION.entrance,
-            ease: EASE.scene,
-            overwrite: true,
-          },
-        )
+        // Shutters: the new photo opens in vertical strips, left to right, each dropping from the
+        // top. One polygon clip on the single image (strips joined along the top edge with zero
+        // area), so there is one <img> and one alt text throughout.
+        const el = q('[data-loc-current]')[0] as HTMLElement | undefined
+        if (el) {
+          const strips = Array.from({ length: SHUTTERS }, () => ({ v: 0 }))
+          const draw = () => {
+            el.style.clipPath = `polygon(${strips
+              .map(({ v }, i) => {
+                const x0 = (i * 100) / SHUTTERS
+                const x1 = ((i + 1) * 100) / SHUTTERS
+                return `${x0}% 0%, ${x0}% ${v}%, ${x1}% ${v}%, ${x1}% 0%`
+              })
+              .join(', ')})`
+          }
+          draw()
+          gsap
+            .timeline({ onUpdate: draw, onComplete: () => void (el.style.clipPath = '') })
+            .to(strips, { v: 100, duration: 0.85, ease: 'power3.inOut', stagger: 0.09 })
+        }
         gsap.fromTo(
           q('[data-loc-current] > *'),
           { scale: 1.18 },
