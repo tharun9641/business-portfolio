@@ -7,14 +7,18 @@ import { NearImage } from '@/components/ui/NearImage'
 import type { LocationsContent } from '@/content/sections/locations'
 import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
 import { DURATION, EASE, SCRUB, STAGGER } from '@/lib/motion'
-import { activeIndex, progressForIndex } from '../LondonEye/wheelMath'
+import { progressForIndex } from '../LondonEye/wheelMath'
 
 const pad = (n: number) => String(n).padStart(2, '0')
+/** Seconds for one place-to-place change; the scroll eases to the new place in the same time. */
+const STEP = 1.1
+/** How far past the current place (in places) a scroll must go to move on: about 50px. */
+const NUDGE = 0.06
 
 /**
- * Full-screen landmark stage. The stage pins and each viewport of scroll lays the next photo over
- * the last: it rises in from below while its image drifts at a slower rate (parallax), and the
- * outgoing photo sinks, zooms and dims. The place names run across the top with the current one
+ * Full-screen landmark stage. The stage pins, and the slightest scroll plays a whole change to the
+ * next (or previous) place as one timed animation: the next photo rises over the last while its
+ * image drifts at a slower rate (parallax), and the outgoing photo sinks, zooms and dims. The place names run across the top with the current one
  * lit; the card on the photo follows. The names are the accessible control and jump the scroll.
  * Reduced motion: no pin; the names simply switch the photo.
  */
@@ -28,24 +32,70 @@ export function LocationsStage({ content }: { content: LocationsContent }) {
   const bar = useRef<HTMLUListElement>(null)
   const trigger = useRef<ScrollTrigger | null>(null)
   const uid = useId()
-  const { reducedMotion, scrollTo } = useSmoothScroll()
+  const { reducedMotion, lenis } = useSmoothScroll()
   const loc = places[active]
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(loc.mapsQuery)}`
 
-  const goTo = useCallback(
+  const current = useRef(0)
+  const stepping = useRef(false)
+
+  // Plays the whole change from the current place to `to` as one timed animation: forward, the
+  // new photo rises over the last (its image drifting slower, the parallax) while the old one
+  // sinks, zooms and dims; backward, the top photo drops away to uncover the earlier one.
+  // Invariant: slides after the current one are clipped away; the current one is on top.
+  const show = useCallback((to: number) => {
+    const from = current.current
+    if (to === from) return
+    current.current = to
+    setActive(to)
+    setReach((r) => Math.max(r, to))
+    const el = stage.current
+    if (!el || !trigger.current) return
+    const q = gsap.utils.selector(el)
+    const slides = q('[data-loc-slide]')
+    const imgs = q('[data-loc-img]')
+    const shades = q('[data-loc-shade]')
+    const t = { duration: STEP, ease: EASE.scene, overwrite: true }
+    if (to > from) {
+      gsap.fromTo(
+        slides[to],
+        { clipPath: 'inset(100% 0% 0% 0%)' },
+        { clipPath: 'inset(0% 0% 0% 0%)', ...t },
+      )
+      gsap.fromTo(imgs[to], { yPercent: 14, scale: 1.12 }, { yPercent: 0, scale: 1, ...t })
+      gsap.to(imgs[from], { yPercent: -8, scale: 1.08, ...t })
+      gsap.to(shades[from], { opacity: 0.55, ...t })
+    } else {
+      for (let k = to + 1; k < from; k++) gsap.set(slides[k], { clipPath: 'inset(100% 0% 0% 0%)' })
+      gsap.fromTo(
+        slides[from],
+        { clipPath: 'inset(0% 0% 0% 0%)' },
+        { clipPath: 'inset(100% 0% 0% 0%)', ...t },
+      )
+      gsap.to(imgs[from], { yPercent: 14, scale: 1.12, ...t })
+      gsap.to(imgs[to], { yPercent: 0, scale: 1, ...t })
+      gsap.to(shades[to], { opacity: 0, ...t })
+    }
+  }, [])
+
+  // One place per gesture: show it, then ease the scroll to its position, ignoring input meanwhile.
+  const step = useCallback(
     (i: number) => {
       const st = trigger.current
-      if (!st) {
-        setActive(i)
-        setReach((r) => Math.max(r, i))
-        return
-      }
-      scrollTo(Math.round(st.start + progressForIndex(i, n) * (st.end - st.start)))
+      if (!st || !lenis) return show(i)
+      stepping.current = true
+      show(i)
+      lenis.scrollTo(Math.round(st.start + progressForIndex(i, n) * (st.end - st.start)), {
+        duration: STEP,
+        lock: true,
+        onComplete: () => void (stepping.current = false),
+      })
     },
-    [n, scrollTo],
+    [lenis, n, show],
   )
+  const goTo = step
 
-  // Pinned, scrubbed overlay sequence.
+  // Pinned stage. Not scrubbed: the slightest scroll past the current place plays the next one.
   useGSAP(
     () => {
       const el = stage.current
@@ -53,12 +103,9 @@ export function LocationsStage({ content }: { content: LocationsContent }) {
       const mm = gsap.matchMedia()
       mm.add('(prefers-reduced-motion: no-preference)', () => {
         const q = gsap.utils.selector(el)
-        const slides = q('[data-loc-slide]')
-        const imgs = q('[data-loc-img]')
-        const shades = q('[data-loc-shade]')
         // The first photo drifts into place as the stage scrolls up to pin.
         gsap.fromTo(
-          imgs[0],
+          q('[data-loc-img]')[0],
           { yPercent: -6 },
           {
             yPercent: 0,
@@ -66,49 +113,31 @@ export function LocationsStage({ content }: { content: LocationsContent }) {
             scrollTrigger: { trigger: el, start: 'top bottom', end: 'top top', scrub: SCRUB },
           },
         )
-        const tl = gsap.timeline({
-          defaults: { ease: EASE.scrub, duration: 1 },
-          scrollTrigger: {
-            trigger: el,
-            start: 'top top',
-            end: () => `+=${(n - 1) * window.innerHeight}`,
-            pin: true,
-            scrub: SCRUB,
-            invalidateOnRefresh: true,
-            snap: {
-              snapTo: 1 / (n - 1),
-              inertia: false,
-              duration: { min: 0.25, max: 0.7 },
-              delay: 0.12,
-              ease: 'power1.inOut',
-            },
-            onUpdate: (self) => {
-              const i = activeIndex(self.progress, n)
-              setActive(i)
-              setReach((r) => Math.max(r, i))
-            },
+        trigger.current = ScrollTrigger.create({
+          trigger: el,
+          start: 'top top',
+          end: () => `+=${(n - 1) * window.innerHeight}`,
+          pin: true,
+          invalidateOnRefresh: true,
+          onUpdate: (self) => {
+            if (stepping.current) return
+            const at = self.progress * (n - 1)
+            const cur = current.current
+            // Arrived from far away (a jump or the curtain): just match where we are.
+            if (Math.abs(at - cur) > 1) show(Math.round(at))
+            else if (at > cur + NUDGE) step(Math.min(n - 1, cur + 1))
+            else if (at < cur - NUDGE) step(Math.max(0, cur - 1))
           },
         })
-        trigger.current = tl.scrollTrigger ?? null
-        for (let i = 1; i < n; i++) {
-          const at = i - 1
-          tl.fromTo(
-            slides[i],
-            { clipPath: 'inset(100% 0% 0% 0%)' },
-            { clipPath: 'inset(0% 0% 0% 0%)' },
-            at,
-          )
-            .fromTo(imgs[i], { yPercent: 14, scale: 1.12 }, { yPercent: 0, scale: 1 }, at)
-            .to(imgs[i - 1], { yPercent: -8, scale: 1.08 }, at)
-            .fromTo(shades[i - 1], { opacity: 0 }, { opacity: 0.55 }, at)
-        }
         ScrollTrigger.refresh()
         return () => {
           trigger.current = null
+          stepping.current = false
         }
       })
     },
-    { scope: stage, dependencies: [n] },
+    // Rebuild from scratch when Lenis arrives, so no stale trigger keeps the old callbacks.
+    { scope: stage, dependencies: [n, show, step], revertOnUpdate: true },
   )
 
   // Text handover on each new place: the name rises out of a mask, then the rest of the card.
