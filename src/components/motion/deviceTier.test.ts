@@ -23,7 +23,9 @@ test('no WebGL or a software renderer is low', () => {
 
 test('slow network, data saver or weak hardware is low', () => {
   assert.equal(classifyTier({ ...desktop, connection: 'slow-2g' }), 'low')
-  assert.equal(classifyTier({ ...desktop, connection: '3g' }), 'low')
+  assert.equal(classifyTier({ ...desktop, connection: '2g' }), 'low')
+  // A '3g' estimate is common on ordinary connections and fluctuates; it doesn't decide the tier.
+  assert.equal(classifyTier({ ...desktop, connection: '3g' }), 'high')
   assert.equal(classifyTier({ ...desktop, connection: '4g' }), 'high')
   assert.equal(classifyTier({ ...desktop, saveData: true }), 'low')
   assert.equal(classifyTier({ ...desktop, memory: 2 }), 'low')

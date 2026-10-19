@@ -72,8 +72,9 @@ export function Wheel2D({
         />
       ))}
       <g ref={wheel} transform={`translate(${hubX} ${hubY}) rotate(${-deg(initialRotation)})`}>
-        <circle r={R} fill="none" stroke={steel} strokeWidth={Math.max(1.5, R * 0.012)} />
-        <circle r={R * 0.97} fill="none" stroke={steel} strokeOpacity={0.5} strokeWidth={1} />
+        {/* A deep braced rim, like the real truss: outer and inner chords with diagonal ties. */}
+        <circle r={R} fill="none" stroke={steel} strokeWidth={Math.max(2, R * 0.012)} />
+        <circle r={R * 0.94} fill="none" stroke={steel} strokeWidth={Math.max(1.5, R * 0.008)} />
         {/* Rim truss: ties between the outer and inner chords, alternately straight and raked. */}
         {Array.from({ length: 96 }, (_, k) => {
           const a = (k / 96) * Math.PI * 2
@@ -81,13 +82,13 @@ export function Wheel2D({
           return (
             <line
               key={`t${k}`}
-              x1={R * 0.97 * Math.cos(a)}
-              y1={-R * 0.97 * Math.sin(a)}
+              x1={R * 0.94 * Math.cos(a)}
+              y1={-R * 0.94 * Math.sin(a)}
               x2={R * Math.cos(b)}
               y2={-R * Math.sin(b)}
               stroke={steel}
-              strokeOpacity={0.55}
-              strokeWidth={0.75}
+              strokeOpacity={0.85}
+              strokeWidth={Math.max(1, R * 0.004)}
             />
           )
         })}

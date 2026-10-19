@@ -18,7 +18,9 @@ const SOFTWARE_GPU = /swiftshader|llvmpipe|software|basic render/i
 /** Pure classification, so it can be unit-tested and reused server-side. */
 export function classifyTier(s: TierSignals): DeviceTier {
   if (!s.webgl || (s.renderer && SOFTWARE_GPU.test(s.renderer))) return 'low'
-  if (s.saveData || (s.connection && /(^|-)(2g|3g)$/.test(s.connection))) return 'low'
+  // Only an explicit Data Saver or a genuinely 2G-class link. Chrome's estimate swings between
+  // '3g' and '4g' on ordinary connections, which flipped the same machine to the flat wheel.
+  if (s.saveData || (s.connection && /(^|-)2g$/.test(s.connection))) return 'low'
   if ((s.memory !== undefined && s.memory <= 2) || (s.cores !== undefined && s.cores <= 2)) {
     return 'low'
   }
