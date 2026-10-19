@@ -20,6 +20,8 @@ import {
   rotationForIndex,
 } from './wheelMath'
 
+/** Fraction of the way to the next stop a scroll must reach before the ride moves on. */
+const NEXT_STOP_AT = 0.33
 const loadWheel3D = () => import('./Wheel3D')
 const Wheel3D = dynamic(loadWheel3D, { ssr: false })
 
@@ -74,6 +76,8 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     wheelBox.current?.setAttribute('data-rotation', rot.toFixed(3))
   }, [])
   const trigger = useRef<ScrollTrigger | null>(null)
+  // The stop the wheel last came to rest on; snapping measures intent from here.
+  const restStop = useRef(0)
   const [layout, setLayout] = useState<WheelLayout | null>(null)
   const [active, setActive] = useState(0)
   const [use3D, setUse3D] = useState(false)
@@ -150,7 +154,24 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
             scrub: SCRUB,
             invalidateOnRefresh: true,
             snap: {
-              snapTo: 1 / (n - 1),
+              // Move on only after a deliberate scroll (a third of the way to the next stop);
+              // less snaps back. GSAP's default snaps toward the last movement however small, so
+              // smooth-scroll drift after landing could skip a stop before it was read.
+              snapTo: (v: number) => {
+                const seg = 1 / (n - 1)
+                const at = restStop.current
+                const d = v - at * seg
+                if (Math.abs(d) < seg * NEXT_STOP_AT) return at * seg
+                const k = Math.round(v / seg)
+                return (
+                  (d > 0
+                    ? Math.min(n - 1, Math.max(at + 1, k))
+                    : Math.max(0, Math.min(at - 1, k))) * seg
+                )
+              },
+              onComplete: (self) => {
+                restStop.current = activeIndex(self.progress, n)
+              },
               // Settle on the nearest stop; velocity would overshoot to the first or last capsule.
               inertia: false,
               duration: { min: 0.25, max: 0.7 },
