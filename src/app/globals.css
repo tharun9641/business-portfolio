@@ -513,18 +513,38 @@ html[data-tier='low'] .hero-bus {
   }
 }
 
-/* SVG wheel pods; [data-lit] is the pod at the boarding point (set imperatively as it turns). */
-.eye-pod {
-  fill: rgb(232 182 90 / 0.28);
-  stroke: rgb(232 226 214 / 0.7);
+/* SVG wheel cabins (the 2D fallback), drawn like the 3D ones. [data-lit] marks the cabin at the
+   boarding point, set imperatively as the wheel turns. */
+.eye-cabin-ring {
+  fill: none;
+  stroke: rgb(201 210 220 / 0.7);
   stroke-width: 1;
+}
+.eye-cabin-frame {
+  stroke: rgb(196 204 213 / 0.85);
+  stroke-width: 1;
+}
+.eye-pod,
+.eye-cabin-glow {
   transform-box: fill-box;
   transform-origin: center;
   transition:
     transform 0.35s var(--ease-entrance),
     fill 0.35s var(--ease-entrance);
 }
-.eye-pod[data-lit] {
+.eye-pod {
+  fill: rgb(185 205 224 / 0.22);
+  stroke: rgb(232 226 214 / 0.75);
+  stroke-width: 1;
+}
+.eye-cabin-glow {
+  fill: rgb(240 190 100 / 0.7);
+}
+.eye-cabin[data-lit] .eye-pod {
+  fill: rgb(232 182 90 / 0.45);
+  transform: scale(1.08);
+}
+.eye-cabin[data-lit] .eye-cabin-glow {
   fill: var(--lamp);
   transform: scale(1.08);
   filter: drop-shadow(0 0 10px rgb(232 182 90 / 0.8));
