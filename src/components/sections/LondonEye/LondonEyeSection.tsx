@@ -107,14 +107,17 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     return () => ro.disconnect()
   }, [content.wheel])
 
-  // Fetch and parse the 3D chunk once the visitor starts scrolling (during the hero), so mounting
-  // it later only costs GPU setup and it never competes with the first load.
+  const [near, setNear] = useState(false)
+
+  // Fetch the 3D chunk once the visitor starts scrolling (during the hero), so it never competes
+  // with the first load, then mount it straight away: by the time the Ride scrolls in it has
+  // drawn, and the oval SVG stand-in is never seen.
   useEffect(() => {
     if (!use3D) return
     const idle = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 200))
     const onScroll = () => {
       window.removeEventListener('scroll', onScroll)
-      idle(() => void loadWheel3D())
+      idle(() => void loadWheel3D().then(() => setNear(true)))
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -201,9 +204,8 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
     },
   )
 
-  // Mount the 3D chunk only once the section is within a screen of view (keeps it off the
-  // critical path), and draw only while it is near the viewport.
-  const [near, setNear] = useState(false)
+  // Mount the 3D wheel once its chunk has loaded or the section is close, and draw while it is
+  // within two screens, so its first frames (and shader compiles) happen before it's seen.
   useEffect(() => {
     const el = section.current
     if (!el) return
@@ -212,7 +214,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         setRunning(e.isIntersecting)
         if (e.isIntersecting) setNear(true)
       },
-      { rootMargin: '100% 0px' },
+      { rootMargin: '200% 0px' },
     )
     io.observe(el)
     return () => io.disconnect()
