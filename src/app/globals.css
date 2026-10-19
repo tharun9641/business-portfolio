@@ -268,10 +268,8 @@
   flex-direction: column;
   align-items: center;
   gap: 0.75rem;
-  font-size: var(--step--1);
-  letter-spacing: var(--track-eyebrow);
-  text-transform: uppercase;
-  color: var(--stone-80);
+  font-size: var(--step-0);
+  color: var(--stone);
 }
 .hero-cue-line {
   width: 1px;
@@ -566,7 +564,6 @@ html[data-tier='low'] .hero-bus {
   letter-spacing: 0.02em;
   white-space: nowrap;
   color: var(--stone-60);
-  text-shadow: 0 1px 12px rgb(11 18 32 / 0.8);
   transition:
     color var(--dur-micro) var(--ease-entrance),
     scale var(--dur-micro) var(--ease-entrance);

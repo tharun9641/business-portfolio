@@ -1,7 +1,6 @@
 import type { ContactMessages } from '@/lib/contact'
 
 export type ContactContent = {
-  eyebrow: string
   heading: string
   intro: string
   /** Shown beside the form so visitors can reach the studio directly. */
@@ -22,7 +21,6 @@ export type ContactContent = {
 }
 
 export const contactContent: ContactContent = {
-  eyebrow: 'Contact',
   heading: 'Book a consultation',
   intro:
     'Tell us about the house, the rooms and how you want them to feel. We reply within two working days, usually with a time to visit.',

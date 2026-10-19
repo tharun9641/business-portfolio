@@ -9,7 +9,6 @@ import { gsap, ScrollTrigger, SplitText, useGSAP } from '@/lib/gsap'
 import { DURATION, EASE, SCRUB, STAGGER } from '@/lib/motion'
 import { progressForIndex } from '../LondonEye/wheelMath'
 
-const pad = (n: number) => String(n).padStart(2, '0')
 /** Seconds for one place-to-place change; the scroll eases to the new place in the same time. */
 const STEP = 1.1
 /** How far past the current place (in places) a scroll must go to move on: about 50px. */
@@ -261,22 +260,14 @@ export function LocationsStage({ content }: { content: LocationsContent }) {
 
       <div className="absolute inset-x-0 bottom-0 z-(--z-content) mx-auto max-w-(--content-max) px-(--page-margin) pb-(--space-12)">
         <div id={`${uid}-card`} data-loc-card aria-live="polite" className="max-w-[46ch]">
-          <p className="text-step--1 tracking-eyebrow text-lamp uppercase">
-            <span className="tabular-nums">
-              {pad(active + 1)} / {pad(n)}
-            </span>
-            <span aria-hidden className="mx-3 text-stone-60">
-              ·
-            </span>
-            {loc.area}
-          </p>
           <h3
             key={loc.name}
             data-loc-name
-            className="mt-3 font-display text-step-5 leading-tight tracking-display text-stone"
+            className="font-display text-step-5 leading-tight tracking-display text-stone"
           >
             {loc.name}
           </h3>
+          <p className="mt-2 text-step-0 text-lamp">{loc.area}</p>
           <p className="mt-4 text-step-0 leading-body text-stone-80">{loc.body}</p>
           <a
             className="link mt-5 inline-block text-step--1"

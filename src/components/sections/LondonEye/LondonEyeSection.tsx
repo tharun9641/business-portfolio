@@ -300,12 +300,6 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
         )
         // Text appears as the capsule arrives.
         .fromTo(
-          next.querySelector('[data-eye-number]'),
-          { y: 16 * dir, autoAlpha: 0 },
-          { y: 0, autoAlpha: 1, duration: DURATION.micro, ease: EASE.entrance },
-          SPIN * 0.7,
-        )
-        .fromTo(
           lines,
           { yPercent: 110 * dir },
           { yPercent: 0, duration: DURATION.entrance * 0.7, stagger: 0.06, ease: EASE.entrance },
@@ -460,10 +454,9 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
       ) : null}
 
       <div className="eye-content" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
-        <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{content.eyebrow}</p>
         <SplitHeading
           id={headingId}
-          className="mt-3 font-display text-step-4 leading-tight tracking-display text-balance text-stone"
+          className="font-display text-step-4 leading-tight tracking-display text-balance text-stone"
         >
           {content.heading}
         </SplitHeading>
@@ -480,12 +473,7 @@ export function LondonEyeSection({ id, content }: SectionProps<LondonEyeContent>
               data-active={i === active || undefined}
             >
               <div className="eye-panel-text">
-                <p data-eye-number className="font-mono text-step--1 text-lamp">
-                  {String(i + 1).padStart(2, '0')} / {String(n).padStart(2, '0')}
-                </p>
-                <h3 className="mt-3 font-display text-step-3 leading-snug text-stone">
-                  {s.heading}
-                </h3>
+                <h3 className="font-display text-step-3 leading-snug text-stone">{s.heading}</h3>
                 <p
                   data-eye-body
                   className="mt-4 max-w-[38ch] text-step-0 leading-body text-stone-80"

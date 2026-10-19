@@ -38,12 +38,9 @@ export function ContactBand({ id, content }: SectionProps<ContactContent>) {
 
       <div className="relative z-(--z-content) mx-auto grid w-full max-w-(--content-max) grid-cols-4 gap-x-(--grid-gutter) gap-y-12 px-(--page-margin) py-(--space-16) md:grid-cols-12">
         <div className="col-span-4 md:col-span-5">
-          <Reveal>
-            <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{content.eyebrow}</p>
-          </Reveal>
           <SplitHeading
             id={headingId}
-            className="mt-4 font-display text-step-5 leading-tight tracking-display text-balance text-stone"
+            className="font-display text-step-5 leading-tight tracking-display text-balance text-stone"
           >
             {content.heading}
           </SplitHeading>
@@ -70,7 +67,7 @@ export function ContactBand({ id, content }: SectionProps<ContactContent>) {
           </Reveal>
         </div>
         <div className="col-span-4 md:col-span-6 md:col-start-7">
-          <Reveal className="relative rounded-sm border border-hairline bg-ink/70 p-6 backdrop-blur-md md:p-10">
+          <Reveal className="relative bg-ink p-6 md:p-10">
             <ContactForm content={content} />
           </Reveal>
         </div>

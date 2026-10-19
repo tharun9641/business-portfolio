@@ -39,18 +39,15 @@ export function LocationsSection({ id, content }: SectionProps<LocationsContent>
       />
 
       <div className="relative z-(--z-content) mx-auto w-full max-w-(--content-max) px-(--page-margin) py-(--space-16)">
-        <div className="max-w-[56ch]">
-          <Reveal>
-            <p className="text-step--1 tracking-eyebrow text-lamp uppercase">{content.eyebrow}</p>
-          </Reveal>
+        <div className="grid grid-cols-4 gap-x-(--grid-gutter) gap-y-6 md:grid-cols-12 md:items-end">
           <SplitHeading
             id={headingId}
-            className="mt-4 font-display text-step-5 leading-tight tracking-display text-balance text-stone"
+            className="col-span-4 font-display text-step-5 leading-tight tracking-display text-balance text-stone md:col-span-7"
           >
             {content.heading}
           </SplitHeading>
-          <Reveal delay={0.15}>
-            <p className="mt-6 text-step-0 leading-body text-stone-80">{content.intro}</p>
+          <Reveal delay={0.15} className="col-span-4 md:col-span-4 md:col-start-9">
+            <p className="max-w-[44ch] text-step-0 leading-body text-stone">{content.intro}</p>
           </Reveal>
         </div>
       </div>

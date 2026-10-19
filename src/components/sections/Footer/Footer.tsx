@@ -5,7 +5,7 @@ import type { SectionProps } from '@/content/types'
 export function Footer({ id, content }: SectionProps<SiteContent>) {
   const { contact, social, footer } = content
   return (
-    <footer id={id} className="border-t border-hairline bg-ink text-stone">
+    <footer id={id} className="bg-ink text-stone">
       <div className="mx-auto grid max-w-(--content-max) grid-cols-4 gap-x-(--grid-gutter) gap-y-12 px-(--page-margin) py-(--space-12) md:grid-cols-12">
         <div className="col-span-4 md:col-span-5">
           <p className="font-display text-step-3 leading-snug">{content.name}</p>

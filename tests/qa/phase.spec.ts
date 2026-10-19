@@ -234,9 +234,10 @@ for (const vp of VIEWPORTS) {
         Number(await page.locator('#process .eye-wheel').getAttribute('data-rotation')),
       )
       expect(await selectedTab(page)).toBe(i)
-      await expect(
-        page.locator('#process [data-eye-panel][data-active] [data-eye-number]'),
-      ).toHaveText(new RegExp(`^0${i + 1} / 0${n}$`))
+      const heading = page.locator('#process [data-eye-panel][data-active] h3')
+      await expect(heading).toBeVisible()
+      const label = await page.locator('#process [role=tab]').nth(i).getAttribute('aria-label')
+      expect(label?.endsWith(` ${await heading.textContent()}`)).toBe(true)
       await page.screenshot({ path: path.join(OUT, `eye-${vp.name}-${i}.png`) })
     }
     // The wheel turns one way, one cabin per stop, with the 3D wheel live.

@@ -13,7 +13,6 @@ export type LocationItem = {
 }
 
 export type LocationsContent = {
-  eyebrow: string
   heading: string
   intro: string
   listLabel: string
@@ -22,7 +21,6 @@ export type LocationsContent = {
 }
 
 export const locationsContent: LocationsContent = {
-  eyebrow: 'Locations',
   heading: 'Drawn between the landmarks',
   intro:
     'Most of our homes sit within sight of the river. These are the places our clients navigate by, and the light we design around.',

@@ -7,7 +7,6 @@ export type EyeSubsection = {
 }
 
 export type LondonEyeContent = {
-  eyebrow: string
   heading: string
   /** Accessible name for the subsection tab list. */
   tablistLabel: string
@@ -31,7 +30,6 @@ export type LondonEyeContent = {
 }
 
 export const londonEyeContent: LondonEyeContent = {
-  eyebrow: 'The Ride',
   heading: 'One slow revolution, five stops',
   tablistLabel: 'How we work, step by step',
   goToLabel: 'Go to',

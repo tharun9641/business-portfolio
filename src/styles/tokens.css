@@ -33,7 +33,7 @@
   );
 
   /* Fluid type scale: 1.25 ratio at 375px, rising to 1.333 at 1440px */
-  --step--1: clamp(0.8rem, 0.78rem + 0.1vw, 0.875rem);
+  --step--1: clamp(0.875rem, 0.85rem + 0.1vw, 0.9375rem);
   --step-0: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
   --step-1: clamp(1.25rem, 1.18rem + 0.33vw, 1.5rem);
   --step-2: clamp(1.563rem, 1.44rem + 0.56vw, 2rem);
